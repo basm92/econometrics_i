@@ -7,8 +7,51 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
 ```
 
 ## Assignment 1
 
+At the beginning of the code,set the random seed to 810 using set.seed().  Failure to do so will be penalised.
 
+```{r}
+set.seed(810)
+```
+
+a. Simulate 100,000 observations from the DGP 
+
+```{r}
+x <- rnorm(100000, mean = 6, sd = sqrt(3))
+alpha <- 5
+e <- rnorm(10000, 0, 1)
+
+y <- alpha + 0.3*x + 0.1*x^2 + e
+
+dataset <- data.frame(x = x, x_sq = x^2, y = y)
+```
+
+```{r}
+dataset %>%
+    ggplot(aes(x = x)) + geom_histogram(bins = 50)
+
+dataset %>%
+    ggplot(aes(x = x_sq)) + geom_histogram(bins = 50)
+
+dataset %>%
+    ggplot(aes(x = y)) + geom_histogram(bins = 50)
+```
+
+```{r}
+dataset %>%
+    ggplot(aes(x = x, y = y)) + geom_point()
+```
+
+b. Break the data into 1000 datasets of 100 observations sequentially (i.e. dataset 1 comprises observations 1-100 from your simulation, dataset 2 comprises observations 101-200 and so on
+
+```{r}
+dataset %>% 
+   group_by((row_number()-1) %/% (n()/1000)) %>%
+   nest %>% pull(data)
+
+```
