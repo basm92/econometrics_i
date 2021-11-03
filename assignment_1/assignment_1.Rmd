@@ -195,7 +195,25 @@ The coefficients are not impacted, because there is no omitted variable bias. Th
 
 ## Question 2
 
-You are a labor economist trying to estimate the gender wage gap within occupations for women with children - that is, the effect of gender on wages given occupational choice.  You have access to a dataset containing a set of wages,$W_i$, a gender dummy $D_i$, a set of occupational dummies$O_{ij}$ and hours spent on childcare $C_i$ for a sample of men and women with children.  Assume that there is a positive covariance between each of your regressors, some covariance between each of the regressors and wages,and that gender at least partially determines occupational choice and hours spent on childcare.
+You are a labor economist trying to estimate the gender wage gap within occupations for women with children - that is, the effect of gender on wages given occupational choice.  You have access to a dataset containing a set of wages,$W_i$, a gender dummy $D_i$, a set of occupational dummies$O_{ij}$ and hours spent on childcare $C_i$ for a sample of men and women with children.  Assume that there is a positive covariance between each of your regressors, some covariance between each of the regressors and wages, and that gender at least partially determines occupational choice and hours spent on childcare.
+
+$W_i = \beta D_i + \gamma O_i + \delta C_i + \epsilon$. 
+
+a. Derive the expected value of the least-squares estimator for the coefficient on the gender dummy without controlling for either occupation or hours spent on childcare
+
+We have that $b = (D^T D)^{-1}D^T W$ and 
+
+$$
+\mathbb{E}[b] = \mathbb{E}[(D^T D)^{-1}D^T y] = \mathbb{E}[(D^T D)^{-1}D^T(\beta D + \gamma O + \delta C + \epsilon)] 
+$$
+which simplifies to: 
+
+$$
+\beta + \gamma \cdot \mathbb{E}[(D^T D)^{-1} D^T O] + \delta \cdot \mathbb{E}[(D^T D)^{-1} D^T C]
+$$
+The latest expression contains the covariances of $D$ with $O$ and $C$ respectively in the numerator, and the variance of $D$ in the denominator. 
+
+The variance of this estimator is: 
 
 
 
