@@ -1,0 +1,14 @@
+---
+title: "Assignment 1"
+author: "590049bm and"
+date: "11/3/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Assignment 1
+
+
