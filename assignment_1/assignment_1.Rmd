@@ -21,8 +21,13 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE, 
                       message = FALSE)
 
+f <- function(x) format(round(x, 2), big.mark=",")
+gm <- list(
+  list("raw" = "nobs", "clean" = "N"),
+  list("raw" = "adj.r.squared", "clean" = "Adj. R^2", fmt = f))
+
 # ici on va mettre toutes les bibliotheques
-library(tidyverse)
+library(tidyverse); library(modelsummary); library(car)
 ```
 
 
@@ -214,6 +219,90 @@ $$
 The latest expression contains the covariances of $D$ with $O$ and $C$ respectively in the numerator, and the variance of $D$ in the denominator. 
 
 The variance of this estimator is: 
+
+$$
+\text{Var}(b) = 
+$$
+
+b. A friend who has taken an undergraduate econometrics course suggests including both the occupational dummies and hours spent on childcare as control variables, to remove omitted variable bias.  Now imagine we control for both of these in our least-squares regression.  Derive the coefficient estimate and the variance of the estimator.
+
+## Question 3
+
+a. Derive the log-likelihood function for the service life of n machines.
+
+\begin{multline}
+L(\alpha, x) = \Pi_{i=1}^N f(x_i) = \alpha^n \text{exp}(\alpha \sum_{i=1}^N x_i) \\
+\text{Taking the logs on both sides and applying the corresponding rules gives:} \\
+log L(\alpha, x) = \sum_{i=1}^N f(x_i) = n \text{ln}(\alpha) - \alpha \sum_{i=1}^N  x_i
+\end{multline}
+    
+b. Derive  $\hat{\alpha}$ the maximum likelihood estimator for $\alpha$.  Please check the second-order condition to ensure your result indeed maximizes the log-likelihood function.
+
+Taking the first derivative and setting it equal to zero gives:
+
+$$
+\alpha_{MLE} = \frac{n}{\sum_{i=1}^N x_i}
+$$
+The second derivative of the log-likelihood function is:
+
+$$
+\frac{\partial \text{log} L}{\alpha} = - \frac{n}{\alpha^2}
+$$
+which is always negative (given $\alpha \neq 0$) hence, a maximum is attained. 
+
+c. Derive the log-likelihood function (Weibull)
+
+$$
+L(\beta, \gamma, x) = \Pi_{i=1}^N f(x_i) = \Pi_{i=1}^N \frac{\beta}{\lambda}\left(\frac{x_i}{\lambda}\right)^{\beta-1} \text{exp}\{\left(-\frac{x_i}{\lambda}\right)^\beta\} 
+$$
+The log-likelihood is then obtained by taking the log on both sides:
+
+
+## Question 4
+
+a.  Estimate the two following models. Interpret the results of the two models and also compare the results.
+```{r}
+dataas1 <- readr::read_csv("./DataAS1.csv")
+```
+
+```{r}
+model1 <- lm(data = dataas1, birthweight ~ age + smoker + alcohol + drinks)
+model2 <- update(model1, . ~ . + unmarried + educ)
+
+modelsummary(list(model1, model2), 
+             stars = c("*" = 0.10, "**" = 0.05, "***" = 0.01),
+             gof_map = gm
+             )
+
+```
+
+b. Test the null hypothesis H0: $\beta_{unmarried}=\beta_{educ}=0$.  Please include the name of the test, the value of the test statistics, the p-value and the conclusion in your answer.
+
+The test is called the F-test. We can execute it using the `car` package:
+
+```{r}
+linearHypothesis(model2, c("unmarried=0", "educ=0"))
+```
+
+c. Are the residuals of model 2 normally distributed? Provide a histogram for the residuals and also perform a formal test.
+
+```{r}
+data.frame(resid = model2$residuals) %>%
+    ggplot(aes(x = resid)) + geom_histogram()
+```
+
+
+d. There  could  be  nonlinear  relations  between  the  dependent  variable and the independent variables. Perform a test to investigate the possible non-linear relation.  What is your conclusion?
+
+Use the OLS method to estimate a new model (i.e.  model 3) whose dependent variable is the log of birthweight and the independent variables are the same  as those in model  2.   
+
+```{r}
+model3 <- lm(data = dataas1, log(birthweight) ~ age + smoker + alcohol +
+                 drinks + unmarried + educ)
+```
+
+Then use the  maximum likelihood method to estimate model 3 again. Provide a table to show the coefficients of all regressors for two methods. Explain why the coefficients of regressors for the two methods are similar or why they are different.
+
 
 
 
