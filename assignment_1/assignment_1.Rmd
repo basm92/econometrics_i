@@ -257,6 +257,11 @@ L(\beta, \gamma, x) = \Pi_{i=1}^N f(x_i) = \Pi_{i=1}^N \frac{\beta}{\lambda}\lef
 $$
 The log-likelihood is then obtained by taking the log on both sides:
 
+$$
+n \log \beta - n \log \lambda + (\beta-1) \sum_{i=1}^N \log x_i - (\beta-1) n \log \lambda - \sum_{i=1}^N \left(\frac{x_i}{\lambda}\right)^\beta
+$$
+
+
 
 ## Question 4
 
