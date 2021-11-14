@@ -6,13 +6,11 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-
 def.chunk.hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
   x <- def.chunk.hook(x, options)
   ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
 })
-
 knitr::opts_chunk$set(echo = TRUE,
                       out.width = "250pt", 
                       out.height = "200pt", 
@@ -20,12 +18,10 @@ knitr::opts_chunk$set(echo = TRUE,
                       size = 'small', 
                       warning = FALSE, 
                       message = FALSE)
-
 f <- function(x) format(round(x, 2), big.mark=",")
 gm <- list(
   list("raw" = "nobs", "clean" = "N"),
   list("raw" = "adj.r.squared", "clean" = "Adj. R2", fmt = f))
-
 # ici on va mettre toutes les bibliotheques
 library(tidyverse); library(modelsummary); library(car)
 ```
@@ -45,25 +41,19 @@ a. Simulate 100,000 observations from the DGP
 x <- rnorm(100000, mean = 6, sd = sqrt(3))
 alpha <- 5
 e <- rnorm(100000, 0, 1)
-
 y <- alpha + 0.3*x + 0.1*x^2 + e
-
 dataset <- data.frame(x = x, x_sq = x^2, y = y)
 ```
 
 ```{r}
 p1 <- dataset %>%
     ggplot(aes(x = x)) + geom_histogram(bins = 50)
-
 p2 <- dataset %>%
     ggplot(aes(x = x_sq)) + geom_histogram(bins = 50)
-
 p3 <- dataset %>%
     ggplot(aes(x = y)) + geom_histogram(bins = 50)
-
 p4 <- dataset %>%
     ggplot(aes(x = x, y = y)) + geom_point()
-
 cowplot::plot_grid(p1, p2, p3, p4, nrow = 2, ncol = 2)
 ```
 
@@ -80,18 +70,14 @@ hundred <- dataset %>%
 beta1 <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x + x_sq) %>%
     .$coefficients %>%
     .[2])
-
 se1 <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x + x_sq) %>%
                   summary() %>%
                   .$coefficients %>%
                   .[2,2])
-
 p1_een <- data.frame(b1 = beta1, se1 = se1) %>%
     ggplot(aes(x = b1)) + geom_histogram()
-
 p2_een <- data.frame(b1 = beta1, se1 = se1) %>%
     ggplot(aes(x = se1)) + geom_histogram()
-
 cowplot::plot_grid(p1_een, p2_een)
 ```
 
@@ -99,18 +85,14 @@ cowplot::plot_grid(p1_een, p2_een)
 beta_omv <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x) %>%
     .$coefficients %>%
     .[2])
-
 se_omv <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x) %>%
                   summary() %>%
                   .$coefficients %>%
                   .[2,2])
-
 p1_omv <- data.frame(b1 = beta_omv, se1 = se_omv) %>%
     ggplot(aes(x = b1)) + geom_histogram()
-
 p2_omv <- data.frame(b1 = beta_omv, se1 = se_omv) %>%
     ggplot(aes(x = se1)) + geom_histogram()
-
 cowplot::plot_grid(p1_omv, p2_omv)
 ```
 
@@ -131,9 +113,7 @@ d. Simulate another dataset as in a), but with 1,000,000 observations. Repeat pa
 x2 <- rnorm(1000000, mean = 6, sd = sqrt(3))
 alpha2 <- 5
 e2 <- rnorm(1000000, 0, 1)
-
 y2 <- alpha2 + 0.3*x2 + 0.1*x2^2 + e2
-
 dataset2 <- data.frame(x = x2, x_sq = x2^2, y = y2)
 ```
 
@@ -147,20 +127,15 @@ thousand <- dataset2 %>%
 beta_ef <- map_dbl(thousand, ~ lm(data = .x, formula = y ~ x + x_sq) %>%
     .$coefficients %>%
     .[2])
-
 se_ef <- map_dbl(thousand, ~ lm(data = .x, formula = y ~ x + x_sq) %>%
                   summary() %>%
                   .$coefficients %>%
                   .[2,2])
-
 p1_ef <- data.frame(b1 = beta_ef, se1 = se_ef) %>%
     ggplot(aes(x = b1)) + geom_histogram()
-
 p2_ef <- data.frame(b1 = beta_ef, se1 = se_ef) %>%
     ggplot(aes(x = se1)) + geom_histogram()
-
 cowplot::plot_grid(p1_ef, p2_ef)
-
 ```
 Comparing this histogram to thr histogram from b), we can see that the mean stays approximately the same. However, the spread and therefore the variance of the estimate from d) is smaller than from the estimate of b). This makes sense, as with an increasing number of observations the variance of the estimate decreases. The same can be observed with the standard error of the estimate. The mean stays approximately the same but the variance of the standard error decreases.
 
@@ -169,33 +144,26 @@ e. Now, generate a new variable $C_i$ that is correlated with $X_i$.  Do this by
 ```{r}
 c <- rnorm(100000, mean = 1, sd = sqrt(2)) + x
 dataset <- data.frame(x = x, x_sq = x^2, y = y, c = c)
-
 hundred <- dataset %>% 
    group_by((row_number()-1) %/% (n()/1000)) %>%
    nest %>% pull(data)
-
 beta_twee <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x + x_sq + c) %>%
     .$coefficients %>%
     .[2])
-
 se_twee <- map_dbl(hundred, ~ lm(data = .x, formula = y ~ x + x_sq + c) %>%
                   summary() %>%
                   .$coefficients %>%
                   .[2,2])
-
 p1_twee <- data.frame(b1_e = beta_twee, 
            se_e = se_twee) %>%
     ggplot(aes(x = b1_e)) + geom_histogram()
-
 p2_twee <- data.frame(b1_e = beta_twee, 
            se_e = se_twee) %>%
     ggplot(aes(x = se_e)) + geom_histogram()
-
 cowplot::plot_grid(p1_een, p2_een,
                    p1_omv, p2_omv,
         p1_twee, p2_twee,
         nrow = 3, ncol = 2)
-
 ```
 
 Re-run the regressions as $Y_i = \alpha + \beta_1 X_i + \beta_2 X_i^2 + \beta_3 C_i + \epsilon_i$ and plot the distribution of these coefficient estimates and standard errors for $\beta_1$ next to the coefficient estimates from the second part.  What happens to the coefficient estimates, and why?
@@ -272,6 +240,7 @@ The log-likelihood is then obtained by taking the log on both sides:
 
 $$
 n \log \beta - n \log \lambda + (\beta-1) \sum_{i=1}^N \log x_i - (\beta-1) n \log \lambda - \sum_{i=1}^N \left(\frac{x_i}{\lambda}\right)^\beta 
+$$ 
 
 d. The researcher further assumes that $\beta$ is known but $lamda$ is unknown. Derive $\hat\lamda$, the maximum likelihood estimator for $\lamda$. You do not need to verify
 the second-order condition in this question.\\
@@ -279,7 +248,7 @@ the second-order condition in this question.\\
 Taking the first derivative of the log-likelihood with respect to $\lamda$ and setting it to zero, gives us:
 
 $$
--\frac{n}{\lamda} + \beta \sum_{i=1}^N \left(\frac{x_i}{\lambda}^(\beta + 1)\right) - n(\beta-1) = 0
+-\frac{n}{\lambda} + \beta \sum_{i=1}^N \left(\frac{x_i}{\lambda}^(\beta + 1)\right) - n(\beta-1) = 0
 $$
 
 Reaaranging for $\lamda$, gives us the following maximum likelihood estimate for $\lamda$:
@@ -303,7 +272,6 @@ dataas1 <- readr::read_csv("./DataAS1.csv")
 ```{r}
 model1 <- lm(data = dataas1, birthweight ~ age + smoker + alcohol + drinks)
 model2 <- update(model1, . ~ . + unmarried + educ)
-
 modelsummary(list(model1, model2), 
              stars = c("*" = 0.10, "**" = 0.05, "***" = 0.01),
              gof_map = gm
@@ -317,10 +285,8 @@ b. Test the null hypothesis H0: $\beta_{unmarried}=\beta_{educ}=0$.  Please incl
 The test is called the F-test. We first comptue it manually and then corrobate it, executing it using the `car` package:
 
 ```{r}
-
 RSS1 <- t(resid(model1))%*%resid(model1)
 RSS1
-
 RSS2 <- t(resid(model2))%*%resid(model2)
 RSS2
 # -------------------------------------------------------------------
@@ -333,7 +299,6 @@ n = nrow(dataas1) # number of observations
 Ftest = ((RSS1-RSS2)/g)/(RSS1/(n-k))
 Ftest
 1-pf(Ftest, g, n-k) #p-value for F(g,n-k)
-
 # H0 is rejected at 5 % significance level
 ```
 
@@ -363,38 +328,28 @@ The t-statistic of the non-linear model with squared fitted values gives us evid
 
 ```{r}
 # non-linear models
-
 n = nobs(model2)
 C <- rep(1, n)
 X <- cbind(C,dataas1$age, dataas1$smoker, dataas1$alcohol, dataas1$drinks, dataas1$unmarried, dataas1$educ)
 bhat <- coefficients(model2)
-
 predval <- X%*%bhat
-
 # (1) non-linear model with squared fitted value
 predval2 <- as.matrix(predval^2)
 model3 <- lm(birthweight ~ age + smoker + alcohol + drinks + 
                unmarried + educ + predval2, data=dataas1)
-
-
 # non-linear term significant (t-test for H0: b(predval2)=0)
 # reject H0
-
 # (2) non-linear model with fitted value^3
 predval3<-as.matrix(predval^3)
 model4 <- lm(birthweight ~ age + smoker + alcohol + drinks + 
                unmarried + educ + predval2 + predval3, data=dataas1)
-
-
 RSS3 <- t(resid(model4))%*%resid(model4)
-
 # compute F-test: H0: b(predval2)=b(predval3)=0
 k = 9
 g = 2 # number of restrictions
 Ftest = ((RSS2-RSS3)/g)/(RSS3/(n-k))
 Ftest
 1-pf(Ftest, g, n-k) #p-value
-
 # do not reject H0, there is evidence that predval2 and predval3 are jointly! not zero
 ```
 
@@ -408,6 +363,33 @@ model_e <- lm(data = dataas1, log(birthweight) ~ age + smoker + alcohol +
 
 Then use the  maximum likelihood method to estimate model 3 again. Provide a table to show the coefficients of all regressors for two methods. Explain why the coefficients of regressors for the two methods are similar or why they are different.
 
+```{r}
+y = log(dataas1$birthweight)
+LL <- function(theta,y,X){
+  n <- nrow(X)
+  k <- ncol(X)
+  beta <- theta[1:k]
+  sigma2 <- theta[k+1]
+  e <- y-X%*%beta
+  logl <- -.5*n*log(2*pi)-.5*n*log(sigma2)-((t(e)%*%e)/(2*sigma2))
+  return(-logl)
+}
+ML <- optim(c(1,1,1,1,1,1,1,1),LL,method="BFGS",hessian=T,y=y,X=X)
 
-Provide a table to show the coefficients of all regressors for two methods. Explain why the coefficients of regressors for the two methods are similar or why they are different.
+```
 
+
+\begin{table}[]
+\begin{tabular}{lll}
+            & Estimate OLS                                                        & Estimate ML  \\
+(Intercept) & \begin{tabular}[c]{@{}l@{}}8.1336310***\\ (0.0297187)\end{tabular}  & 8.133631029  \\
+age         & \begin{tabular}[c]{@{}l@{}}-0.0013215\\ (0.0008445)\end{tabular}    & -0.001321462 \\
+smoker      & \begin{tabular}[c]{@{}l@{}}-0.0563769***\\ (0.0102227)\end{tabular} & -0.056376933 \\
+alcohol     & \begin{tabular}[c]{@{}l@{}}-0.0130960\\ (0.0352059)\end{tabular}    & -0.013095958 \\
+drinks      & \begin{tabular}[c]{@{}l@{}}-0.0020363\\ (0.0070214)\end{tabular}    & -0.002036251 \\
+unmarried   & \begin{tabular}[c]{@{}l@{}}-0.0881805***\\ (0.0104432)\end{tabular} & -0.088180499 \\
+educ        & \begin{tabular}[c]{@{}l@{}}0.0031101\\ (0.0020467)\end{tabular}     & 0.003110116 
+\end{tabular}
+\end{table}
+
+The coefficients of the two regressors are very similar. Usually, the maximum likelihood estimation is used when the error term has a linear effect, i.e. when $\epsilon$ is non-normal and too far from normality. However, to find maximum likelihood estimators we have to make assumptions on the distribution of the disturbances. In this estimation we assume that $\epsilon$ is normally distributed. The same assumption is made in OLS which is why the coefficient estimations are almost the same.
