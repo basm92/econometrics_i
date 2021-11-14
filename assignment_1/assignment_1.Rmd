@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE,
 f <- function(x) format(round(x, 2), big.mark=",")
 gm <- list(
   list("raw" = "nobs", "clean" = "N"),
-  list("raw" = "adj.r.squared", "clean" = "Adj. R^2", fmt = f))
+  list("raw" = "adj.r.squared", "clean" = "Adj. R2", fmt = f))
 
 # ici on va mettre toutes les bibliotheques
 library(tidyverse); library(modelsummary); library(car)
@@ -118,10 +118,12 @@ We see that the coefficients from the fully specified model (without omitted var
 
 c. Imagine we had instead generated $X_i = c$ for all $x_i$ and tried to perform our simulation above.  This would fail because we would violate one of the necessary conditions for computing the least squares estimator.  Which one, and how?
 
+We would violate assumption 1: 
+
 $$
 \sum_{i=1}^{N} (x_i - \bar{x})^2 \geq 0 
 $$
-is not met. If we have no finite sum of squares, we have $\text{Var} X = 0$, and hence, we cannot estimate the OLS estimator. 
+as the sum of the square of the difference between Xi and X bar would be zero if $X_i = c$. Xi = c would also mean that X is not full rank and therefore not invertible. Hence, we could not calculate the least squares estimator.
 
 d. Simulate another dataset as in a), but with 1,000,000 observations. Repeat part b), but now using 1000 observations per model.  Only fit the equation $Y_i = \alpha + \beta_1 X_i + \beta_2 X_i^2 + \epsilon$ this time. Plot the histograms of the estimate of $\beta_1$ and $se(\beta_1)$ and compare them to the estimates from the same model in (b). What happens to the distribution of the coefficient estimates and standard errors when we increase the sample size per model?
 
@@ -136,7 +138,7 @@ dataset2 <- data.frame(x = x2, x_sq = x2^2, y = y2)
 ```
 
 ```{r}
-thousand <- dataset %>% 
+thousand <- dataset2 %>% 
    group_by((row_number()-1) %/% (n()/1000)) %>%
    nest %>% pull(data)
 ```
@@ -160,6 +162,7 @@ p2_ef <- data.frame(b1 = beta_ef, se1 = se_ef) %>%
 cowplot::plot_grid(p1_ef, p2_ef)
 
 ```
+Comparing this histogram to thr histogram from b), we can see that the mean stays approximately the same. However, the spread and therefore the variance of the estimate from d) is smaller than from the estimate of b). This makes sense, as with an increasing number of observations the variance of the estimate decreases. The same can be observed with the standard error of the estimate. The mean stays approximately the same but the variance of the standard error decreases.
 
 e. Now, generate a new variable $C_i$ that is correlated with $X_i$.  Do this by creating a vector of observations drawn from N(1,2) and adding them to $X_i$. Add $C_i$ the dataset from the previous questions (i.e with 100,000 observations total).  
 
@@ -189,12 +192,15 @@ p2_twee <- data.frame(b1_e = beta_twee,
     ggplot(aes(x = se_e)) + geom_histogram()
 
 cowplot::plot_grid(p1_een, p2_een,
+                   p1_omv, p2_omv,
         p1_twee, p2_twee,
-        nrow = 2, ncol = 2)
+        nrow = 3, ncol = 2)
 
 ```
 
-Re-run the regressions as $Y_i = \alpha + \beta_1 X_i + \beta_2 X_i^2 + \beta_3 C_i + \epsilon_i$ and plot the distribution of these coefficient estimates and standard errors for $\beta_1$ next tothe coefficient estimates from the second part.  What happens to the coefficient estimates, and why?
+Re-run the regressions as $Y_i = \alpha + \beta_1 X_i + \beta_2 X_i^2 + \beta_3 C_i + \epsilon_i$ and plot the distribution of these coefficient estimates and standard errors for $\beta_1$ next to the coefficient estimates from the second part.  What happens to the coefficient estimates, and why?
+
+While the first regression has a different mean, the estimators of regression 2 and 3 have approximately the same mean and distribution. Therefore, the inclusion of c does not add any additional information to our estimation and hence is a redundant variable while including the square of x changes the estimation of beta 1, indicating that it is a non-linear relationship! We also can observe this with the standard errors of the estimate. The standard error of the second and third estimator has approximately the same mean and distribution, indicating that c is a redundant variable. 
 
 The coefficients are not impacted, because there is no omitted variable bias. There is no relationship between $Y$ and $C$, hence, the OLS coefficient for $\beta_1$ is still unbiased. We do pay a small penalty in terms of efficiency for adding an unnecessary variable, but with $N=1000$, this is negligable. 
 
@@ -226,15 +232,22 @@ $$
 
 b. A friend who has taken an undergraduate econometrics course suggests including both the occupational dummies and hours spent on childcare as control variables, to remove omitted variable bias.  Now imagine we control for both of these in our least-squares regression.  Derive the coefficient estimate and the variance of the estimator.
 
+
 ## Question 3
 
 a. Derive the log-likelihood function for the service life of n machines.
 
-\begin{multline}
-L(\alpha, x) = \Pi_{i=1}^N f(x_i) = \alpha^n \text{exp}(\alpha \sum_{i=1}^N x_i) \\
-\text{Taking the logs on both sides and applying the corresponding rules gives:} \\
-log L(\alpha, x) = \sum_{i=1}^N f(x_i) = n \text{ln}(\alpha) - \alpha \sum_{i=1}^N  x_i
-\end{multline}
+
+$$
+L(\alpha, x) = \Pi_{i=1}^N f(x_i) = \alpha^n \text{exp}(\alpha \sum_{i=1}^N x_i)
+$$
+
+Taking the logs on both sides and applying the corresponding rules gives:
+
+$$
+\log L(\alpha, x) = \sum_{i=1}^N f(x_i) = n \text{ln}(\alpha) - \alpha \sum_{i=1}^N  x_i
+$$
+    
     
 b. Derive  $\hat{\alpha}$ the maximum likelihood estimator for $\alpha$.  Please check the second-order condition to ensure your result indeed maximizes the log-likelihood function.
 
@@ -277,8 +290,7 @@ model2 <- update(model1, . ~ . + unmarried + educ)
 modelsummary(list(model1, model2), 
              stars = c("*" = 0.10, "**" = 0.05, "***" = 0.01),
              gof_map = gm
-             )
-
+             ) 
 ```
 
 b. Test the null hypothesis H0: $\beta_{unmarried}=\beta_{educ}=0$.  Please include the name of the test, the value of the test statistics, the p-value and the conclusion in your answer.
