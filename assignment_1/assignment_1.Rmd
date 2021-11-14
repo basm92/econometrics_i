@@ -239,7 +239,7 @@ a. Derive the log-likelihood function for the service life of n machines.
 
 
 $$
-L(\alpha, x) = \Pi_{i=1}^N f(x_i) = \alpha^n \text{exp}(\alpha \sum_{i=1}^N x_i)
+L(\alpha, x) = \Pi_{i=1}^N f(x_i) = \alpha^n \text{exp}(-\alpha \sum_{i=1}^N x_i)
 $$
 
 Taking the logs on both sides and applying the corresponding rules gives:
@@ -247,7 +247,7 @@ Taking the logs on both sides and applying the corresponding rules gives:
 $$
 \log L(\alpha, x) = \sum_{i=1}^N f(x_i) = n \text{ln}(\alpha) - \alpha \sum_{i=1}^N  x_i
 $$
-    
+  
     
 b. Derive  $\hat{\alpha}$ the maximum likelihood estimator for $\alpha$.  Please check the second-order condition to ensure your result indeed maximizes the log-likelihood function.
 
@@ -271,9 +271,26 @@ $$
 The log-likelihood is then obtained by taking the log on both sides:
 
 $$
-n \log \beta - n \log \lambda + (\beta-1) \sum_{i=1}^N \log x_i - (\beta-1) n \log \lambda - \sum_{i=1}^N \left(\frac{x_i}{\lambda}\right)^\beta
+n \log \beta - n \log \lambda + (\beta-1) \sum_{i=1}^N \log x_i - (\beta-1) n \log \lambda - \sum_{i=1}^N \left(\frac{x_i}{\lambda}\right)^\beta 
+
+d. The researcher further assumes that $\beta$ is known but $lamda$ is unknown. Derive $\hat\lamda$, the maximum likelihood estimator for $\lamda$. You do not need to verify
+the second-order condition in this question.\\
+
+Taking the first derivative of the log-likelihood with respect to $\lamda$ and setting it to zero, gives us:
+
+$$
+-\frac{n}{\lamda} + \beta \sum_{i=1}^N \left(\frac{x_i}{\lambda}^(\beta + 1)\right) - n(\beta-1) = 0
 $$
 
+Reaaranging for $\lamda$, gives us the following maximum likelihood estimate for $\lamda$:
+
+$$
+\hat{\lamda} = \sum_{i=1}^N \left(\frac{x_i}{\sqrt[\beta]{n}}\right)
+$$
+
+e. Which distribution specification do you prefer and why?
+
+The exponential distribution is a special case of the Weibull distribution with $\beta = 1$. Having only one unknown parameter, the exponential distribution is easier to use for the maximum likelihood estimation. The Weibull distribution on the other side is much more complex as it is not possible to solve the maximum likelihood estimation analytically but only numerically when we have to unknown parameters. Hence, if the memory ability of the Weibull distribution is not necessary, it is more convenient to use the exponential distribution. 
 
 ## Question 4
 
