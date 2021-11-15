@@ -1,7 +1,7 @@
 ---
 title: "Assignment 1"
-author: "590049bm and"
-date: "11/3/2021"
+author: "630516am and 590049bm"
+date: "15/3/2021"
 output: pdf_document
 ---
 
@@ -103,7 +103,7 @@ c. Imagine we had instead generated $X_i = c$ for all $x_i$ and tried to perform
 We would violate assumption 1: 
 
 $$
-\sum_{i=1}^{N} (x_i - \bar{x})^2 \geq 0 
+\sum_{i=1}^{N} (x_i - \bar{x})^2 > 0 
 $$
 as the sum of the square of the difference between Xi and X bar would be zero if $X_i = c$. Xi = c would also mean that X is not full rank and therefore not invertible. Hence, we could not calculate the least squares estimator.
 
@@ -202,7 +202,7 @@ b. A friend who has taken an undergraduate econometrics course suggests includin
 
 c. Think about what you are trying to estimate. Why would including hours spent on childcare as a control be incorrect, despite your result above? To try to sharpen your thinking you might want to draw a causal diagram for the data-generating process (if you do not know what these are, see https://mixtape.scunning.com/dag.html - you do not need to worry about the formalisms), thinking about how each variable determines each other.
 
-Wages is an outcome variable, which consist partially of hours people have work (at a paid job). Hours spent on childcare is als another way you can use your time, hence, is also an outcome variable. Hence, part of the effect of gender on wages is happening through the effect of working on childcare. Hence, conditioning on childcare would imply 'conditioning on the outcome', and thus downwardly biasing your coefficient of interest (i.e. gender). Therefore, it would generally not be a good idea. 
+Wages is an outcome variable, which consist partially of hours people have worked (at a paid job). Hours spent on childcare is another way you can use your time, hence, is also an outcome variable. Hence, part of the effect of gender on wages is happening through the effect of working on childcare. Hence, conditioning on childcare would imply 'conditioning on the outcome', and thus downwardly bias your coefficient of interest (i.e. gender). Therefore, it would generally not be a good idea to control for childcare in estimating the effect of gender on wages. 
 
 
 ## Question 3
@@ -246,19 +246,18 @@ $$
 n \log \beta - n \log \lambda + (\beta-1) \sum_{i=1}^N \log x_i - (\beta-1) n \log \lambda - \sum_{i=1}^N \left(\frac{x_i}{\lambda}\right)^\beta 
 $$ 
 
-d. The researcher further assumes that $\beta$ is known but $lamda$ is unknown. Derive $\hat\lamda$, the maximum likelihood estimator for $\lamda$. You do not need to verify
-the second-order condition in this question.\\
+d. The researcher further assumes that $\beta$ is known but $\lambda$ is unknown. Derive $\hat\lambda$, the maximum likelihood estimator for $\lambda$. You do not need to verify the second-order condition in this question.\\
 
-Taking the first derivative of the log-likelihood with respect to $\lamda$ and setting it to zero, gives us:
-
-$$
--\frac{n}{\lambda} + \beta \sum_{i=1}^N \left(\frac{x_i}{\lambda}^(\beta + 1)\right) - n(\beta-1) = 0
-$$
-
-Reaaranging for $\lamda$, gives us the following maximum likelihood estimate for $\lamda$:
+Taking the first derivative of the log-likelihood with respect to $\lambda$ and setting it to zero, gives us:
 
 $$
-\hat{\lamda} = \sum_{i=1}^N \left(\frac{x_i}{\sqrt[\beta]{n}}\right)
+-\frac{n}{\lambda} + \beta \sum_{i=1}^N \left(\frac{x_i^\beta}{\lambda^{\beta + 1}}\right) - n(\beta-1) = 0
+$$
+
+Reaaranging for $\lambda$, gives us the following maximum likelihood estimate for $\lambda$:
+
+$$
+\hat{\lambda} = \sum_{i=1}^N \left(\frac{x_i}{\sqrt[\beta]{n}}\right)
 $$
 
 e. Which distribution specification do you prefer and why?
@@ -395,5 +394,6 @@ unmarried   & \begin{tabular}[c]{@{}l@{}}-0.0881805***\\ (0.0104432)\end{tabular
 educ        & \begin{tabular}[c]{@{}l@{}}0.0031101\\ (0.0020467)\end{tabular}     & 0.003110116 
 \end{tabular}
 \end{table}
+
 
 The coefficients of the two regressors are very similar. Usually, the maximum likelihood estimation is used when the error term has a linear effect, i.e. when $\epsilon$ is non-normal and too far from normality. However, to find maximum likelihood estimators we have to make assumptions on the distribution of the disturbances. In this estimation we assume that $\epsilon$ is normally distributed. The same assumption is made in OLS which is why the coefficient estimations are almost the same.
