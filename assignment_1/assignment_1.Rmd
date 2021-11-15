@@ -186,7 +186,7 @@ $$
 We have that $\alpha_{OMV} = (D^T D)^{-1}D^T W$ and 
 
 $$
-\mathbb{E}[\alpha_{OMV}] = \mathbb{E}[(D^T D)^{-1}D^T y] = 
+\mathbb{E}[\alpha_{OMV}] = \mathbb{E}[(D^T D)^{-1}D^T W] = 
 $$
 
 $$
@@ -216,21 +216,23 @@ $$
 The variance of the true OLS estimator is:
 
 $$
-\text{Var}(\alpha_{OLS}) = \sigma^2 (X^TX)^{-1} 
+\text{Var}(\alpha_{OLS}) = \sigma^2 (\tilde{D}^T\tilde{D})^{-1} 
 $$
+where $\tilde{D}$ is obtained by applying the Frish-Lovell-Waugh theorem to partial out the effects of $C$ and $O$: $\tilde{D} = (I-C(C^TC)^{-1}C^T)(I-O(O^TO)^{-1}O^T)$. (This is equal to $(I-Proj(C)) (I-Proj(O)))$ (if this is what the question means with "in terms of the projection matrices"). 
 
-Then, using the result by Heij on p. 144 that the covariance between the estimators is zero, we can evaluate the difference between the variance as:
+Then, using the result by Heij on p. 144 that the covariance between the estimators is zero, we can see that the difference between the variances boils down to: 
 
-$$
-\text{Var}(\hat{\alpha}_{OLS}) - \text{Var}(\hat{\alpha}_{OMV}) = \\
-\text{Var}(\hat{\alpha}_{OLS} - \hat{\alpha}_{OMV}) = 
-$$
+
 
 $$
-\text{Var}(\hat{\alpha}_{OLS})  + \text{Var}(\hat{\alpha}_{OMV}) = \\
-\sigma^2 (X^TX)^{-1} + \sigma^2(D^TD)^{-1} \text{ where } X = [D, O, C]
+\text{Var}(\alpha_{OLS}) - \text{Var} (\alpha_{OMV}) = \sigma^2 (\tilde{D}^T\tilde{D})^{-1} - \sigma^2 (D^TD)^{-1}
 $$
-Now, because of the positive variance property of all independent variables, we know that $(X^TX)^{-1}$ and $(D^TD)^{-1}$ are positive semidefinite matrices, so that the difference in variances between the OLS estimator and the OMV estimator is strictly positive. 
+Now, since $\tilde{D}^T\tilde{D}$ and $D^TD$ are scalars, we realize that the OLS variance is larger than the OMV variance if:
+
+$$
+\text{Var}(D) > \text{Var}(\tilde{D})
+$$
+As $\tilde{D}$ are the residuals after having regressed $D$ on $C$ and $O$, we know that the variation in $\tilde{D}$ is always weakly smaller than the variance in the pure $D$. The only case in which they are equal is when $D$ and $C, O$ are perfectly orthogonal, i.e. if there is no relationship. In all other cases, the variance of $\hat{\alpha}_{OMV} < \hat{\alpha}_{OLS}$. 
 
 b. A friend who has taken an undergraduate econometrics course suggests including both the occupational dummies and hours spent on childcare as control variables, to remove omitted variable bias.  Now imagine we control for both of these in our least-squares regression.  Derive the coefficient estimate and the variance of the estimator.
 
