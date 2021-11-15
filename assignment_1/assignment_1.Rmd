@@ -200,6 +200,10 @@ $$
 
 b. A friend who has taken an undergraduate econometrics course suggests including both the occupational dummies and hours spent on childcare as control variables, to remove omitted variable bias.  Now imagine we control for both of these in our least-squares regression.  Derive the coefficient estimate and the variance of the estimator.
 
+c. Think about what you are trying to estimate. Why would including hours spent on childcare as a control be incorrect, despite your result above? To try to sharpen your thinking you might want to draw a causal diagram for the data-generating process (if you do not know what these are, see https://mixtape.scunning.com/dag.html - you do not need to worry about the formalisms), thinking about how each variable determines each other.
+
+Wages is an outcome variable, which consist partially of hours people have work (at a paid job). Hours spent on childcare is als another way you can use your time, hence, is also an outcome variable. Hence, part of the effect of gender on wages is happening through the effect of working on childcare. Hence, conditioning on childcare would imply 'conditioning on the outcome', and thus downwardly biasing your coefficient of interest (i.e. gender). Therefore, it would generally not be a good idea. 
+
 
 ## Question 3
 
