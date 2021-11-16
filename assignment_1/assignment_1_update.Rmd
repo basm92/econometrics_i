@@ -382,19 +382,18 @@ ML <- optim(c(1,1,1,1,1,1,1,1),LL,method="BFGS",hessian=T,y=y,X=X)
 
 ```
 
-
-\begin{table}[]
+\begin{table}[!h]
 \begin{tabular}{lll}
-            & Estimate OLS & Estimate ML  \\ \hline
-(Intercept) & 8.1336310    & 8.133631029  \\
-age         & -0.0013215   & -0.001321462 \\
-smoker      & -0.0563769   & -0.056376933 \\
-alcohol     & -0.0130960   & -0.013095958 \\
-drinks      & -0.0020363   & -0.002036251 \\
-unmarried   & -0.0881805   & -0.088180499 \\
-educ        & 0.0031101    & 0.003110116 \hline
+Variable & Estimate OLS & Estimate ML  \\ \hline
+(Intercept) & $8.1336310$ & $8.133631029$  \\
+age  & $-0.0013215$ & $-0.001321462$ \\
+smoker & $-0.0563769$ & $-0.056376933$ \\
+alcohol & $-0.0130960$ & $-0.013095958$ \\
+drinks & $-0.0020363$ & $-0.002036251$ \\
+unmarried & $-0.0881805$ & $-0.088180499$ \\
+educ & $0.0031101$  & $0.003110116$ 
 \end{tabular}
-\end{table} 
+\end{table}
 
 
 The coefficients of the two regressors are very similar. Usually, the maximum likelihood estimation is used when the error term has a linear effect, i.e. when $\epsilon$ is non-normal and too far from normality. However, in c) we found evidence that $epsilon$ is normally distributed which explains why the coefficients are so similar to each other.
