@@ -218,7 +218,7 @@ The variance of the true OLS estimator is:
 $$
 \text{Var}(\alpha_{OLS}) = \sigma^2 (\tilde{D}^T\tilde{D})^{-1} 
 $$
-where $\tilde{D}$ is obtained by applying the Frish-Lovell-Waugh theorem to partial out the effects of $C$ and $O$: $\tilde{D} = (I-C(C^TC)^{-1}C^T)(I-O(O^TO)^{-1}O^T)$. (This is equal to $(I-Proj(C)) (I-Proj(O)))$ (if this is what the question means with "in terms of the projection matrices"). 
+where $\tilde{D}$ is obtained by applying the Frish-Lovell-Waugh theorem to partial out the effects of $C$ and $O$: $\tilde{D} = (I-C(C^TC)^{-1}C^T)(I-O(O^TO)^{-1}O^T)D$. (This is equal to $(I-Proj(C)) (I-Proj(O)) D$ (if this is what the question means with "in terms of the projection matrices"). 
 
 Then, using the result by Heij on p. 144 that the covariance between the estimators is zero, we can see that the difference between the variances boils down to: 
 
