@@ -312,7 +312,7 @@ d. The researcher further assumes that $\beta$ is known but $\lambda$ is unknown
 Taking the first derivative of the log-likelihood with respect to $\lambda$ and setting it to zero, gives us:
 
 $$
--\frac{n}{\lambda} + \beta \sum_{i=1}^N \left(\frac{x_i^\beta}{\lambda^{\beta + 1}}\right) - n(\beta-1) = 0
+-\frac{n}{\lambda} + \beta \sum_{i=1}^N \left(\frac{x_i^\beta}{\lambda^{\beta + 1}}\right) - \frac{n(\beta-1)}{\lambda} = 0
 $$
 
 Reaaranging for $\lambda$, gives us the following maximum likelihood estimate for $\lambda$:
@@ -387,7 +387,7 @@ shapiro.test(residuals2)
 
 d. There  could  be  nonlinear  relations  between  the  dependent  variable and the independent variables. Perform a test to investigate the possible non-linear relation.  What is your conclusion?
 
-The t-statistic of the non-linear model with squared fitted values gives us evidence that the model is non-linear as the null hypothesis is rejected. For the non-linear model with value^3, the F-statistics gives us evidence that the squared fitted values and values^3 are jointly non-zero (the t statistics on the other side, does not reject the null hypothesis for both estimators being zero independetly!).
+The t-statistic of the non-linear model with squared fitted values gives us evidence that the model is non-linear as the null hypothesis is rejected. For the non-linear model with value^3, the F-statistics gives us evidence that the squared fitted values and values^3 are jointly non-zero (the t statistics on the other side, does not reject the null hypothesis for both estimators being zero independently!).
 
 
 ```{r}
@@ -455,6 +455,5 @@ unmarried & $-0.0881805$ & $-0.088180499$ \\
 educ & $0.0031101$  & $0.003110116$ 
 \end{tabular}
 \end{table}
-
 
 The coefficients of the two regressors are very similar. Usually, the maximum likelihood estimation is used when the error term has a linear effect, i.e. when $\epsilon$ is non-normal and too far from normality. However, to find maximum likelihood estimators we have to make assumptions on the distribution of the disturbances. In this estimation we assume that $\epsilon$ is normally distributed. The same assumption is made in OLS which is why the coefficient estimations are almost the same.

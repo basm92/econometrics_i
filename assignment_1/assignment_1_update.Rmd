@@ -272,14 +272,10 @@ a.  Estimate the two following models. Interpret the results of the two models a
 dataas1 <- readr::read_csv("./DataAS1.csv")
 ```
 
-```{r}
+```{r, results='asis'}
 model1 <- lm(data = dataas1, birthweight ~ age + smoker + alcohol + drinks)
 model2 <- update(model1, . ~ . + unmarried + educ)
-stargazer(model1, model2)
-#modelsummary(list(model1, model2), 
- # #           stars = c("*" = 0.10, "**" = 0.05, "***" = 0.01),
-  #           gof_map = gm
-    #         ) 
+stargazer(model1, model2, header = F)
 ```
 
 From the first model, the variables age and smoker are significant at a p value of 0.1 The age has a positive effect on the birth weight, whereas the mother being a smoker has a negative effect. In this second model, the variable age is not significant anymore (and also negative), while smoker is still significant at a p value of 0.1. However, in comparison to the first model, its effect is smaller (although still very high). Of the added variables, the mother being unmarried is a significant variable and has a higher (negative) impact on the birth weight than the mother being a smoker. Education, on the other hand, has no significant effect. As we added two new independent variables, it is only natural that $R^2$ increases. Nonetheless, this does not mean that the new variables add to the explanation of the independent variable. 
