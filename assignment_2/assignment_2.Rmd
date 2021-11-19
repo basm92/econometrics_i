@@ -1,0 +1,30 @@
+---
+title: "Assignment 2"
+author: "630516am and 590049bm"
+date: "\today"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+knitr::opts_chunk$set(echo = TRUE,
+                      out.width = "250pt", 
+                      out.height = "200pt", 
+                      fig.align = "center",
+                      size = 'small', 
+                      warning = FALSE, 
+                      message = FALSE)
+f <- function(x) format(round(x, 2), big.mark=",")
+gm <- list(
+  list("raw" = "nobs", "clean" = "N"),
+  list("raw" = "adj.r.squared", "clean" = "Adj. R2", fmt = f))
+# ici on va mettre toutes les bibliotheques
+library(tidyverse); library(modelsummary); library(car)
+```
+
+## Question 1
+
