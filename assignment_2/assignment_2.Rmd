@@ -1,7 +1,7 @@
 ---
 title: "Assignment 2"
 author: "630516am and 590049bm"
-date: "\today"
+date: "23 Nov 2021"
 output: pdf_document
 ---
 
@@ -27,4 +27,60 @@ library(tidyverse); library(modelsummary); library(car)
 ```
 
 ## Question 1
+
+```{r}
+set.seed(2021)
+```
+
+
+```{r}
+b0 <- 3
+b1 <- 5
+b2 <- 8
+
+gamma <- 1 
+
+x1 <- rnorm(5000, mean = 1, sd = 1)
+x2 <- rnorm(5000, mean = 2, sd = 1)
+
+z <- rgamma(5000, shape = 1.2, scale = 1.1)
+
+sigma_sq <- 1*exp(gamma*z)
+epsilon <- rnorm(5000, mean = 0, sd = sqrt(sigma_sq))
+
+y <- b0 + b1*x1 + b2*x2 + epsilon
+
+```
+
+```{r}
+model1 <- lm(y ~ x1 + x2)
+
+modelsummary(model1, 
+             vcov = c("iid", "HC0"), 
+             gof_map = gm, 
+             stars = T)
+
+```
+
+```{r}
+lmtest::bptest(formula = y ~ x1 + x2)
+```
+
+```{r}
+gamma <- 0
+
+sigma_sq <- 1*exp(gamma*z)
+epsilon <- rnorm(5000, mean = 0, sd = sqrt(sigma_sq))
+
+y <- b0 + b1*x1 + b2*x2 + epsilon
+```
+
+
+```{r}
+model1 <- lm(y ~ x1 + x2)
+model2 <- lm(y ~ x1 + x2, weights = sigma_sq)
+
+```
+
+
 
