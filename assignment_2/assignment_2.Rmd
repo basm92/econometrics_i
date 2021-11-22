@@ -87,14 +87,44 @@ model2 <- lm(y ~ x1 + x2, weights = sigma_sq)
 ## Question 2
 
 
-1. Show that the OLS estimator of the parameter $\beta$ is not consistent
+1. Show that the OLS estimator of the parameter $\beta$ is not consistent. 
 
-The estimate coefficient is:
+2. Derive plim (b) where b is the OLS estimator of $\beta$. Determine the sign of the magnitude of the inconsistency when $0 < \beta < 1$,  that is, the sign of plim(b) - $\beta$ when $0 < \beta < 1$.
+
+First, we demean the two variables so that the constant-term $\alpha$ equals zero. Then we regress $\tilde{C} = \beta \tilde{D} + \epsilon$. We can do this because of Frisch-Waugh-Lovell. The estimate that we get is:
 
 
 $$
-\hat \beta = (D^TD)^{-1}D^T C_ = (D^T D)^{-1}(\beta  D + \epsilon) = 
+\hat \beta = (\tilde{D}^T\tilde{D})^{-1}\tilde{D}^T C_ = (\tilde{D}^T \tilde{D})^{-1}(\beta  \tilde{D} + \epsilon) 
 $$
 
+and
 
+$$
+\mathbb{E}[\hat{\beta}] = \beta + (\tilde{D}^T \tilde{D})^{-1}\tilde{D}^T \epsilon 
+$$
+Evaluating the probability limit gives:
 
+$$
+\text{plim}_{n \rightarrow \infty} (\hat{\beta}) = \beta + \text{plim}(\frac{1}{n} \tilde{D}^T\tilde{D})^{-1} \cdot \text{plim}(\frac{1}{n}\tilde{D}^T\epsilon)
+$$
+
+which simplifies to:
+
+$$
+\beta + \frac{1}{\text{Var}(D)} \cdot \frac{1}{1-\beta} \sigma^2
+$$
+by the fact that variances and covariances are the same after demeaning, and by the reduced form equation for $D$ made explicit below. Under $0 < \beta < 1$, since variances are positives, the right term can only be positive and thus the bias is always positive. 
+
+Substituting equation (2) into equation (1) and solving for $C$ gives:
+
+$$
+C = \frac{\alpha}{1-\beta} + \frac{\beta}{1-\beta} Z_i + \frac{1}{1-\beta} \epsilon_i
+$$
+substituting this back in the definition for $D$ gives:
+
+$$
+D = \frac{\alpha}{1-\beta} + \left(\frac{\beta}{1-\beta} + 1 \right) Z_i + \frac{1}{1-\beta} \epsilon_i
+$$
+
+From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon)$. 
