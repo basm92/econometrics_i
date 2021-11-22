@@ -84,3 +84,17 @@ model2 <- lm(y ~ x1 + x2, weights = sigma_sq)
 
 
 
+## Question 2
+
+
+1. Show that the OLS estimator of the parameter $\beta$ is not consistent
+
+The estimate coefficient is:
+
+
+$$
+\hat \beta = (D^TD)^{-1}D^T C_ = (D^T D)^{-1}(\beta  D + \epsilon) = 
+$$
+
+
+
