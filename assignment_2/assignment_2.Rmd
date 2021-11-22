@@ -127,4 +127,40 @@ $$
 D = \frac{\alpha}{1-\beta} + \left(\frac{\beta}{1-\beta} + 1 \right) Z_i + \frac{1}{1-\beta} \epsilon_i
 $$
 
-From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon)$. 
+From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon) = \frac{1}{1-\beta} \sigma^2$. 
+
+3. Find an instrumental variable (IV) for the endogenous variable D i and argue why it could be an IV.
+
+The instrumental variable could be $Z$, because it is relevant, i.e. Cov(D, Z) $\neq 0$. Also, it is exogenous (valid), as it is exogenously generated and has no correlation with the error term $\epsilon$ according to the DGP sketched out here.
+
+4. Derive $b_{IV}$, the IV estimator of $\beta$ in terms of the variables C, D, and Z step by step.
+
+First, suppose X is a matrix consisting of a column of 1's and $D$, so we can write:
+
+$$
+\mathbb{E}[z_i \epsilon_i] = 0 = \frac{1}{n} \sum z_i ( c_i - \alpha - \beta D_i) = \frac{1}{n} \sum z_i (c_i - x_i \beta)
+$$
+
+Using this moment condition to solve for $\beta$, we retrieve the $b_{IV}$ estimator:
+
+$$
+\hat{b}_{IV} = \left( \sum z_i^T x_i \right)^{-1} \left( z_i^T c_i \right) = (Z^T X)^{-1} Z^T C
+$$
+
+5. Use the expression of $b_{IV}$ to show that it is consistent. 
+
+$$
+b_{IV} =  (Z^T X)^{-1} Z^T C =  (Z^T X)^{-1} Z^T (X \beta + \epsilon) = (Z^T X)^{-1} Z^T X \beta + (Z^T X)^{-1} Z^T \epsilon = \beta + (Z^T X)^{-1} Z^T \epsilon 
+$$
+
+Evaluating the plim of this estimator then gives:
+
+$$
+\text{plim}(b_{IV}) = \beta + \text{plim} (Z^T X)^{-1} \cdot \text{plim} (Z^T \epsilon)
+$$
+
+where the last factor goes to zero as $n \rightarrow \infty$. 
+
+## Question 3
+
+1. Plot the distribution of the growth rate of employment and of import exposure 1990-2007 across US commuting zones
