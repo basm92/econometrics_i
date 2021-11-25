@@ -21,6 +21,10 @@ library(estimatr)
 library(lmtest)
 library(sandwich)
 library(haven)
+library(ggplot2)
+library(hrbrthemes)
+library(AER)
+library(dplyr)
 set.seed(2021)
 ```
 
@@ -231,9 +235,79 @@ b) Regress import exposure on the growth rate of employment from 1990- 2007. Plo
 
 ```{r}
 model <- lm(d_pct_manuf  ~ d_tradeusch_pw, data=chinalong)
+
 summary(model)
+
+chinalong %>%
+ ggplot(aes(x = d_tradeusch_pw, y = d_pct_manuf )) +
+ geom_point(colour = "grey") +
+ geom_smooth(method = "lm", fill = NA)+
+ theme_ipsum()
+```
+```{r}
+# controlling for clustered errors
+coeftest(model, vcov = vcovCL, type = "HC1", cluster = ~statefip)
 ```
 
 
+```{r}
+# HAC - controlling for heteroskedastiticy- and autocorrelation-consistent errors
+coeftest(model, vcov = vcovHAC, type = "HC1", cluster = ~statefip)
+```
+The estimators are approximately the same. However, the standard errors are smaller for the model with HAC standard errors clustered by the state levels as we control for heteroskedasticity and autocorrelation. 
+
+
 c) Is this a good causal estimate of the effect of import exposure on employment? Give a reason why or why not.
+
+It is rather seldom that a regression with only one explanatory variable is a sufficient causal estimate. While a higher import exposure indeed correlates with higher unemployment as a higher part of production is outsourced to other countries, we also could consider the export exposure (as exports correlate positively with employment). The question is also what determines the amount of imports in the USA (add more!).
+
+d) The authors construct an instrument for import exposure using the growth rate of Chinese imports in eight other similar countries.
+Construct the instrumental variable estimate of the effect of the growth of import exposure on the growth of employment using the instrument from the data in \"workfile china.dta\". Do so in two ways. First, use a package. Then use matrix multiplication. Present regression results for both. Do not include any additional controls for now.\\
+To show that you have done the matrix multiplication is correct, report the third entry of the projection matrix of the instrument times the endogenous variable i.e of $P_zX$.
+
+```{r}
+# Package
+# IV regression using RPT, RPN and RPU as instruments
+modelIV <- ivreg(d_pct_manuf  ~ d_tradeusch_pw| d_tradeotch_pw_lag, data=chinalong)
+summary(modelIV)
+```
+
+```{r}
+#------------------------------------------------------------------------------------
+# ---- 2SLS (without packages)
+n        = nobs(modelIV)
+Z       <- cbind(rep(1,n),chinalong$d_tradeotch_pw_lag) # instruments
+X       <- cbind(rep(1,n),chinalong$d_tradeusch_pw)    
+y       <- as.matrix(chinalong$d_pct_manuf)
+Xhat    <- Z%*%solve(t(Z)%*%Z)%*%t(Z)%*%X
+B       <- solve(t(Xhat)%*%Xhat)%*%t(Xhat)%*%y  # 2SLS estimate
+eIV     <- y-X%*%B
+k2      <- 2 # number of regressors of second step
+sigmasq <- as.numeric((t(eIV)%*%eIV)/(n-k2)) 
+sder    <- sqrt(diag(sigmasq*solve(t(Xhat)%*%Xhat))) # standard errors of B
+#------------------------------------------------------------------------------------
+```
+
+Third entry of $P_zX$:
+
+```{r}
+Xhat[3] # what is the third entry? Ask!
+```
+e) You might notice that your results are different from the results in the paper. The authors use weighted estimates, where the weights are shares of manufacturing employment. Now reproduce the results in Table 2 and Table 3 in the paper exactly as they do (so two tables containing all the coefficient estimates). For the first, you will need to use workf ile china preperiod.dta. For the second, use ”workf ile china.dta”
+instead. Report the first-stage F statistics. Is the instrument a good instrument?
+
+```{r}
+model1 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990)), vcov = vcovCL, cluster = ~statefip)
+model2 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000)), vcov = vcovCL, cluster = ~statefip)
+model3 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag + t1990 + t2000, data=subset(chinapreperiod, yr==1990|yr==2000)), vcov = vcovCL, cluster = ~statefip)
+model4 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970)), vcov = vcovCL, cluster = ~statefip)
+model5 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980)), vcov = vcovCL, cluster = ~statefip)
+model6 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future + t1970 + t1980, data=subset(chinapreperiod, yr==1970|yr==1980)), vcov = vcovCL, cluster = ~statefip)
+```
+
+Could not reproduce the right numbers yet!
+
+```{r}
+
+```
 
