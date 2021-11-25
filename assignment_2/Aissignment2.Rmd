@@ -1,0 +1,239 @@
+---
+title: "Untitled"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library("stargazer")
+library(purrr)
+library(readr)
+library(estimatr)
+library(lmtest)
+library(sandwich)
+library(haven)
+set.seed(2021)
+```
+
+# Question 1:
+
+a) Assume that $\gamma = 1$. Generate 5000 observations and then use OLS to
+estimate the parameters in the model and calculate the related OLS standard
+errors, t-values and p-values. Then use OLS to estimate the model with White
+standard errors1 and calculate the related White standard errors, t-values and
+p-values. Compare the results.
+
+```{r}
+n = 5000
+b0 = 3
+b1 = 5
+b2 = 8
+x1 = rnorm(n, 1, 1)
+x2 = rnorm(n, 2, 1)
+z = rgamma(n, 1.2, 1.1)
+sigma = 1
+gamma = 1
+```
+
+```{r}
+sigmaV = sigma*exp(gamma*z)
+epsilon = rnorm(n, 0, sqrt(sigmaV))
+plot(epsilon, type = "l")
+```
+
+```{r}
+y = b0 + b1*x1 + b2*x2 + epsilon
+data = data.frame(cbind(y, x1, x2))
+model <- lm(y ~ x1 + x2, data=data)
+summary(model)
+```
+```{r}
+coeftest(model, vcov.= vcovHC(model, type="HC0"))
+```
+We used the coeftest function from the lmtest library in combination with the funtion vcovHC from the sandwhich package to calculate a model with the White standard errors. The coeftest function calculates the t test using a heteroskedasticity robust variance-covariance matrix produced by the vcov function. With "HCO" we indicate that we want to obtain a White standard error (Source: https://www.r-econometrics.com/methods/hcrobusterrors/). \\
+
+Corresponding to the theory, the estimates are unbiased despite heteroscedasticity. Hence, it is no surprise that the estimates are the same for both regressions. However, heteroscedasticity causes inefficiency of the variance which is why the standard error is higher in the basic OLS regression than in the OLS model with White standard errors.
+
+b) What are the procedures to perform the Breusch-Pagan test for heteroskedasticity? Perform a Breusch-Pagan test for heteroskedasticity. Provide
+the value of the test statistic and explain if the null hypothesis is rejected.
+
+In a Breusch-Pagan test the squared OLS residuals are regressed on variables that may relate to the variance. It is assumed that heteroscedasticity is driven by $z_i$. Hence, the null hypothesis is that $\gamma_2,...,\gamma_n$ are zero. \\
+
+To perform the test, we have to estimate $y$ with OLS and compute the residuals in the first step. Thereafter, we perform an auxiliary regression of the form $e_i^2 = \gamma_1 + \gamma_2 z_{2i} + ... + \gamma_p z{pi} + \eta_i$. Takiung $R^2$ of our auxiliary regression, we can calculate $LM = n R^2$ for our test statistic.\\
+
+```{r}
+usq <- resid(model)^2
+# auxiliary regression: dependent variable squared residuals of first regression, explanatory variables are job categories
+res <- lm(usq ~ z, data)
+summary(res)
+nres <- nobs(res)
+Rsq<-summary(res)$r.squared
+
+# test statistic
+BP <- nres*Rsq
+BP
+1-pchisq(BP,2) 
+
+# reject H0
+```
+
+If $z_i$ would not drive the heteroscedasticity, the model would not have any explanatory power. Hence, $R^2$ would be close to zero as well as LM (or BR as denoted in the code). However, as the result of the test statistic shows, BR is not close to zero which gives us evidence that $z_i$ indeed drives the heteroscedasticity. Therefore, we reject the null hypothesis. \\
+
+c) Assume that $\gamma = 0$. Estimate $\beta_0, \beta_1$ and $\beta_2$ separately using\\
+1. OLS\\
+2. WLS with known $\gamma = 0$\\
+3. FWLS with estimated γ (i.e. γ is unknown)\\
+
+Explain the weights you use for WLS and FWLS. Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the their true values?\\
+
+```{r}
+gammaC = 0
+sigmaC = sigma*exp(gammaC*z)
+epsilonC = rnorm(n, 0, sqrt(sigmaC))
+plot(epsilonC, type = "l")
+```
+```{r}
+yC = b0 + b1*x1 + b2*x2 + epsilonC
+dataC = data.frame(cbind(yC, x1, x2))
+modelC <- lm(yC ~ x1 + x2, data =dataC)
+summary(modelC)
+```
+
+For the weighthed least square model, we use $exp(\gamma z_i)$ as our weight, as this is the component that drives the heteroskedasticity in our errors: $w_i = \frac{1}{e^{\gamma z_i}}$. As $\gamma = 0$, the regression should result in the same estimators and same variances as in the basic OLS regression. 
+
+
+
+```{r}
+# ----- WLS
+w <- 1/exp(gammaC*z) # specify weight
+modelWLS <- lm(yC ~ x1 + x2, data =dataC, weights=w)
+
+summary(modelWLS)$coeff
+```
+
+For the feasible weighthed least square model, we first use the residuals of the basic OLS regression to estimate $\gamma$. Then we use this estimator to calculate $exp(\gamma z_i)$ which is then used as our weight as this is the component which drives the heteroskedasticity in our errors.
+```{r}
+# --- FWLS
+eps <- modelC$residuals
+modelEps <- lm(eps ~ z)
+gammaFWLS <- modelEps$coefficient[2]
+w <- 1/exp(gammaFWLS*z) # specify weight
+modelFWLS <- lm(yC ~ x1 + x2, data =dataC, weights=w)
+
+summary(modelFWLS)$coeff
+```
+
+The estimators and variances are approximately equal in all estimated models (there are minor differences from the fourth digit on). Only the variance in the feasible weighted least square model is slightly higher. However, the difference is minimal. For $x_1, x_2$ the estimators are very close to their true value. The intercept also close although there is a higher difference then for the other estimators.\\
+
+d) Now assume that $\gamma = 1$. Repeat sub-question(c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones
+
+```{r}
+gammaD = 1
+sigmaD = sigma*exp(gammaD*z)
+epsilonD = rnorm(n, 0, sqrt(sigmaD))
+plot(epsilonD, type = "l")
+```
+
+```{r}
+yD = b0 + b1*x1 + b2*x2 + epsilonD
+dataD = data.frame(cbind(yD, x1, x2))
+modelD <- lm(yD ~ x1 + x2, data =dataD)
+summary(modelD)
+```
+
+```{r}
+# ----- WLS
+w <- 1/exp(gammaD*z) # specify weight
+modelWLSd <- lm(yD ~ x1 + x2, data =dataD, weights=w)
+
+summary(modelWLSd)$coeff
+```
+
+This model is not right yet!!!!
+
+```{r}
+# --- FWLS
+epsD <- modelD$residuals
+modelEpsD <- lm(epsD ~ z)
+gammaFWLSD <- modelEpsD$coefficient[2]
+w <- 1/exp(gammaFWLSD*z) # specify weight
+modelFWLSD <- lm(yD ~ x1 + x2, data =dataD, weights=w)
+
+summary(modelFWLSD)$coeff
+```
+The estimators of all three models are very close to the true values. However, the variance is higher in the basic OLS model than in the WLS and FWLS models which is not surprising given the heteroskedasticity of the errors. 
+
+e) Now assume that $\gamma = −1$. Repeat sub-question(c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones?
+
+```{r}
+gammaE = 0
+sigmaE = sigma*exp(gammaE*z)
+epsilonE = rnorm(n, 0, sqrt(sigmaE))
+plot(epsilonE, type = "l")
+```
+
+```{r}
+yE = b0 + b1*x1 + b2*x2 + epsilonE
+dataE = data.frame(cbind(yE, x1, x2))
+modelE <- lm(yE ~ x1 + x2, data =dataE)
+summary(modelE)
+```
+
+```{r}
+# ----- WLS
+w <- 1/exp(gammaE*z) # specify weight
+modelWLSe <- lm(yE ~ x1 + x2, data =dataE, weights=w)
+
+summary(modelWLSe)$coeff
+```
+
+
+```{r}
+# --- FWLS
+epsE <- modelE$residuals
+modelEpsE <- lm(epsE ~ z)
+gammaFWLSE <- modelEpsE$coefficient[2]
+w <- 1/exp(gammaFWLSE*z) # specify weight
+modelFWLSE <- lm(yE ~ x1 + x2, data =dataE, weights=w)
+
+summary(modelFWLSE)$coeff
+```
+The estimators are still close to their true values. However, the difference is slightly higher than in the previous estimations. A very interesting aspect is that the standard errors are approximately the same across all models (it this maybe a mistake?).
+
+
+# Question 3
+
+```{r}
+china <- read_dta("workfile_china.dta")
+chinalong <- read_dta("workfile_china_long.dta")
+chinapreperiod <- read_dta("workfile_china_preperiod.dta")
+```
+
+
+a) Plot the distribution of the growth rate of employment and of import exposure 1990-2007 across US commuting zones.
+
+```{r}
+plot(chinalong$czone, chinalong$d_pct_manuf, type="l", main = "distribution of the growth rate of employment")
+plot(chinalong$czone, chinalong$d_tradeusch_pw, type="l", main = "distribution of import exposure")
+```
+
+
+b) Regress import exposure on the growth rate of employment from 1990- 2007. Plot your results. You should be able to reproduce panel B of Figure 2. Compute normal OLS standard errors and HAC standard errors clustered by the state levels (hint use the vcovHAC command from the sandwich package)and compare them.
+
+```{r}
+model <- lm(d_pct_manuf  ~ d_tradeusch_pw, data=chinalong)
+summary(model)
+```
+
+
+c) Is this a good causal estimate of the effect of import exposure on employment? Give a reason why or why not.
+
