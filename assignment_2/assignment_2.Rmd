@@ -91,6 +91,8 @@ model2 <- lm(y ~ x1 + x2, weights = sigma_sq)
 
 2. Derive plim (b) where b is the OLS estimator of $\beta$. Determine the sign of the magnitude of the inconsistency when $0 < \beta < 1$,  that is, the sign of plim(b) - $\beta$ when $0 < \beta < 1$.
 
+In order to evaluate consistency, we must derive the probability limit. Hence, we answer two questions at once. 
+
 First, we demean the two variables so that the constant-term $\alpha$ equals zero. Then we regress $\tilde{C} = \beta \tilde{D} + \epsilon$. We can do this because of Frisch-Waugh-Lovell. The estimate that we get is:
 
 
@@ -114,7 +116,7 @@ which simplifies to:
 $$
 \beta + \frac{1}{\text{Var}(D)} \cdot \frac{1}{1-\beta} \sigma^2
 $$
-by the fact that variances and covariances are the same after demeaning, and by the reduced form equation for $D$ made explicit below. Under $0 < \beta < 1$, since variances are positives, the right term can only be positive and thus the bias is always positive. 
+by the fact that variances and covariances are the same after demeaning, and by the reduced form equation for $D$ made explicit below. Under $0 < \beta < 1$, since variances are positive, the right term can only be positive and thus the bias is always positive. 
 
 Substituting equation (2) into equation (1) and solving for $C$ gives:
 
@@ -164,3 +166,91 @@ where the last factor goes to zero as $n \rightarrow \infty$.
 ## Question 3
 
 1. Plot the distribution of the growth rate of employment and of import exposure 1990-2007 across US commuting zones
+
+
+## Question 4
+
+1. Imagine we fit a linear probability model of $y_i = \alpha + \beta x_i + \epsilon_i$. Derive the distribution of the error terms. Will our least-squares parameter estimate $\beta$ be unbiased? Will it still be the most efficient estimator?
+
+We know that $y_i$ is distributed with probability $p$. If we use a linear model to estimate a $y$, we impose that $p(y_i = 1) = \mathbb{E}[y_i] = \alpha + \beta x_i$. Then, we can characterize the distribution of the error term:
+
+$$
+\epsilon_i = \begin{cases}
+1 - \hat{\alpha} - \hat{\beta}x_i &\text{ with } p = \alpha + \beta x_i \\
+- \hat{\alpha} - \hat{\beta} x_i &\text{ with } p = 1 - (\alpha + \beta x_i)
+\end{cases}
+$$
+Then, since $\epsilon_i$ is now a shifted Bernouilli variable, we can calculate the expected value as:
+
+$$
+\mathbb{E}[\epsilon_i] = (1-\alpha - \beta x_i ) \cdot (\alpha + \beta x_i) + (-\alpha -  \beta x_i) \cdot (1 - \alpha - \beta x_i) = 0
+$$
+The fact that $\mathbb{E}[\epsilon]=0$ also means that the OLS estimator is unbiased. However, the variance $\sigma^2_{\epsilon}$ as $p(1-p) = (\alpha + \beta x_i)\cdot (1-(\alpha + \beta x_i)) = f(x_i)$. This means that the variance of the error term is heteroskedastic! Hence, the estimator will not be the most efficient estimator, as one of the Gauss-Markov assumptions is violated. 
+
+2. Now imagine that we want to estimate this regression model for a given distribution of the errors $F$ (e.g the logistic distribution) using maximum likelihood. Write out the distribution of $y_i$.
+
+In this case, more generally, $y_i$ is distributed as:
+
+$$
+y_i = \begin{cases}
+1 &\text{ with } p = F(X_i \beta) \\
+0 &\text{ with } 1-p = 1- F(X_i \beta)
+\end{cases}
+$$
+The likelihood of one observation (which is the pdf) is then simply:
+
+$$
+l_1 (y_i | x_i) = (F(X_i \beta))^{y_i} (1 - F(X_i \beta))^{1-y_i}
+$$
+
+3. Use the distribution to write out the log-likelihood function. Then, write out the first-order condition for maximisation with respect to $\beta$.
+
+The log-likelihood for $n$ observations is:
+
+$$
+\mathcal{L}_n (y_i | x_i) = \sum_{i=1}^n y_i \log (F(X_i\beta)) + (1-y_i) \log (1-F(X_i \beta))
+$$
+
+Taking the first derivative with respect to the parameters $\beta$ gives:
+
+$$
+\frac{\partial \log \mathcal{L}_n (y_i|x_i)}{\partial \beta} = \sum y_i \frac{1}{F(X_i \beta)} f(X_i \beta) X_i - (1-y_i) \frac{1}{1-F(X_i \beta)} f(X_i \beta) X_i = 0
+$$
+
+This can be rewritten as:
+
+$$
+\sum \frac{y_i - F(X_i\beta)}{F(X_i \beta)(1-F(X_i \beta))} f(X_i \beta) X_i = 0
+$$
+
+4. Imagine we assume a logistic distribution of the errors. Show that our expression above simplifies to $\dots$. 
+
+We use the fact from Heij et al., p. 449, that for the logistic distribution, $F(.) (1-F(.)) = f(.)$. Then, our expression simlifies to:
+
+$$
+\sum y_i - F(X_i \beta) x_i = 0 
+$$
+
+Then, substituting the logit cdf for $F$ gives:
+
+$$
+\sum y_i - \left( \frac{1}{1 + \text{exp}^{-x_i \beta}} \right) x_i = 0 
+$$
+
+which is what we were required to show.
+
+5. Finally, use the value of $F(x_i \beta)$ to write the log of the odds ratio as a function of the parameters of the model. Thus, give an interpretation of the value of $\beta$. 
+
+The log odds ratio is defined as:
+
+$$
+OR = \frac{\frac{1}{1+\text{exp}^{-x_i \beta}}}{1 -  \frac{1}{1+\text{exp}^{-x_i \beta}}} = e^{x_i \beta}
+$$
+
+The log-odds ratio is then:
+
+$$
+\log OR = x_i \beta 
+$$
+
+Beta is then equal to the derivative of the log odds ratio with respect to a regressor. This means that the the strength of $\beta$ is indicative of the relative likelihood of $P(Y_i = 1)$ occurring versus $P(Y_i = 0)$ occurring. In other words, if $\beta > 0$, then an increase in the independent variable makes the event more likely, and a decrease in the independent variable makes the event less likely. 
