@@ -322,3 +322,4 @@ model6Stage1 <- lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t
 stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, model6Stage1)
 ```
 
+The instruments are good, as they are significant in the first stage and the F statistics are above 10.
