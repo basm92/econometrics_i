@@ -162,7 +162,6 @@ modelWLSd <- lm(yD ~ x1 + x2, data =dataD, weights=w)
 summary(modelWLSd)$coeff
 ```
 
-This model is not right yet!!!!
 
 ```{r}
 # --- FWLS
@@ -179,7 +178,7 @@ The estimators of all three models are very close to the true values. However, t
 e) Now assume that $\gamma = −1$. Repeat sub-question(c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones?
 
 ```{r}
-gammaE = 0
+gammaE = -1
 sigmaE = sigma*exp(gammaE*z)
 epsilonE = rnorm(n, 0, sqrt(sigmaE))
 plot(epsilonE, type = "l")
@@ -291,23 +290,35 @@ sder    <- sqrt(diag(sigmasq*solve(t(Xhat)%*%Xhat))) # standard errors of B
 Third entry of $P_zX$:
 
 ```{r}
-Xhat[3] # what is the third entry? Ask!
+Xhat[3,2]
 ```
 e) You might notice that your results are different from the results in the paper. The authors use weighted estimates, where the weights are shares of manufacturing employment. Now reproduce the results in Table 2 and Table 3 in the paper exactly as they do (so two tables containing all the coefficient estimates). For the first, you will need to use workf ile china preperiod.dta. For the second, use ”workf ile china.dta”
 instead. Report the first-stage F statistics. Is the instrument a good instrument?
 
 ```{r}
-model1 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990)), vcov = vcovCL, cluster = ~statefip)
-model2 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000)), vcov = vcovCL, cluster = ~statefip)
-model3 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag + t1990 + t2000, data=subset(chinapreperiod, yr==1990|yr==2000)), vcov = vcovCL, cluster = ~statefip)
-model4 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970)), vcov = vcovCL, cluster = ~statefip)
-model5 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980)), vcov = vcovCL, cluster = ~statefip)
-model6 <- coeftest(lm(d_sh_empl_mfg ~ d_tradeotch_pw_lag_future + t1970 + t1980, data=subset(chinapreperiod, yr==1970|yr==1980)), vcov = vcovCL, cluster = ~statefip)
+
+model1 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model2 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model3 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw + t2000| d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model4 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model5 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model6 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future + t1980| d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
 ```
 
-Could not reproduce the right numbers yet!
 
 ```{r}
+stargazer(model1, model2, model3, model4, model5, model6)
+```
+```{r}
+model1Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model2Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model3Stage1 <- lm(d_tradeusch_pw + t2000 ~ d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model4Stage1 <- lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model5Stage1 <- lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model6Stage1 <- lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+```
 
+```{r}
+stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, model6Stage1)
 ```
 
