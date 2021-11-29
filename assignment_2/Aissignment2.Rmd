@@ -126,7 +126,7 @@ For the feasible weighthed least square model, we first use the residuals of the
 ```{r}
 # --- FWLS
 eps <- modelC$residuals
-modelEps <- lm(eps ~ z)
+modelEps <- lm(log(eps^2) ~ z)
 gammaFWLS <- modelEps$coefficient[2]
 w <- 1/exp(gammaFWLS*z) # specify weight
 modelFWLS <- lm(yC ~ x1 + x2, data =dataC, weights=w)
@@ -164,7 +164,7 @@ summary(modelWLSd)$coeff
 ```{r}
 # --- FWLS
 epsD <- modelD$residuals
-modelEpsD <- lm(epsD ~ z)
+modelEpsD <- lm(log(epsD^2) ~ z)
 gammaFWLSD <- modelEpsD$coefficient[2]
 w <- 1/exp(gammaFWLSD*z) # specify weight
 modelFWLSD <- lm(yD ~ x1 + x2, data =dataD, weights=w)
@@ -201,20 +201,54 @@ summary(modelWLSe)$coeff
 ```{r}
 # --- FWLS
 epsE <- modelE$residuals
-modelEpsE <- lm(epsE ~ z)
+modelEpsE <- lm(log(epsE^2) ~ z)
 gammaFWLSE <- modelEpsE$coefficient[2]
 w <- 1/exp(gammaFWLSE*z) # specify weight
 modelFWLSE <- lm(yE ~ x1 + x2, data =dataE, weights=w)
 
 summary(modelFWLSE)$coeff
 ```
-The estimators are still close to their true values. However, the difference is slightly higher than in the previous estimations. A very interesting aspect is that the standard errors are approximately the same across all models (it this maybe a mistake?).
+The estimators are still close to their true values. However, the difference is slightly higher than in the previous estimations.
 
 \clearpage 
 
 ## Question 2
 
 1. Show that the OLS estimator of the parameter $\beta$ is not consistent. 
+
+We have $C = D\beta + \epsilon$ and $D = C + Z$. For the OLS estimator we get:
+
+$$
+b = (D^TD)^{-1}D^TC
+$$
+$$
+b = (D^T D)^{-1}D^T (D\beta + \epsilon)
+$$
+$$
+b = (D^T D)^{-1}D^T D\beta + (D^T D)^{-1}D^T \epsilon
+$$
+
+$$
+b = \beta + (D^T D)^{-1}D^T \epsilon
+$$
+$$
+b = \beta + (\frac{1}{n} D^T D)^{-1} \frac{1}{n} D^T \epsilon
+$$
+$$
+\text{plim}(b) = \beta + \text{plim}((\frac{1}{n} D^T D)^{-1}) \text{plim}(\frac{1}{n} D^T \epsilon)
+$$
+We assume that $\text{plim}(\frac{1}{n} D^T D) = Q_{DD}$ and that $Q_{DD}$ is of full rank (so we can take the inverse). Hence:
+
+$$
+\text{plim}(b) = \beta + Q^{-1}_{DD} \text{plim}(\frac{1}{n} D^T \epsilon)
+$$
+$$
+\text{plim}(b) = \beta + Q^{-1}_{DD} \text{plim}(\frac{1}{n} (C+Z)^T \epsilon)
+$$
+$$
+\text{plim}(b) = \beta + Q^{-1}_{DD} ( \text{plim}(\frac{1}{n} C^T \epsilon) + \text{plim}(\frac{1}{n} Z^T \epsilon))
+$$
+For $n \rightarrow \infty$, $\text{plim}(\frac{1}{n} Z^T \epsilon) = 0$ as $\mathbb{E}[Z_i \epsilon_i] = 0$. $\text{plim}(\frac{1}{n} C^T \epsilon$, on the other side, is unequal zero as $\epsilon$ is inside the DGP and therefore the covariance is unequal zero. 
 
 2. Derive plim (b) where b is the OLS estimator of $\beta$. Determine the sign of the magnitude of the inconsistency when $0 < \beta < 1$,  that is, the sign of plim(b) - $\beta$ when $0 < \beta < 1$.
 
@@ -256,7 +290,18 @@ $$
 D = \frac{\alpha}{1-\beta} + \left(\frac{\beta}{1-\beta} + 1 \right) Z_i + \frac{1}{1-\beta} \epsilon_i
 $$
 
-From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon) = \frac{1}{1-\beta} \sigma^2$. 
+From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon) = \frac{1}{1-\beta} \sigma^2$:
+
+$$
+\text{plim}(\frac{1}{n} C\prime \epsilon) = \frac{1}{n} \mathbb{E}[C\prime \epsilon] = \frac{1}{n} \mathbb{E} \sum [(C_i\prime \epsilon_i) \epsilon_i] = \frac{1}
+{n} \mathbb{E}[\sum (\frac{\alpha}{1-\beta} + \frac{\beta}{1-\beta} Z_i + \frac{1}{1-\beta} \epsilon_i)]
+$$
+$$
+\Rightarrow = \frac{1}{n} \mathbb{E}[\frac{1}{1-\beta} \sum \epsilon_i]
+$$
+$$
+\Rightarrow = \frac{1}{1-\beta} \sigma^2
+$$
 
 3. Find an instrumental variable (IV) for the endogenous variable D i and argue why it could be an IV.
 
@@ -270,11 +315,13 @@ $$
 \mathbb{E}[z_i \epsilon_i] = 0 = \frac{1}{n} \sum z_i ( c_i - \alpha - \beta D_i) = \frac{1}{n} \sum z_i (c_i - x_i \beta)
 $$
 
-Using this moment condition to solve for $\beta$, we retrieve the $b_{IV}$ estimator:
+Using this moment condition to solve for $\beta$ (what we can do as $m=k$), we retrieve the $b_{IV}$ estimator:
 
 $$
 \hat{b}_{IV} = \left( \sum z_i^T x_i \right)^{-1} \left( z_i^T c_i \right) = (Z^T X)^{-1} Z^T C
 $$
+
+The second element of the vector is the $b_{IV}$.
 
 5. Use the expression of $b_{IV}$ to show that it is consistent. 
 
@@ -394,12 +441,12 @@ stargazer(model1, model2, model3, model4, model5, model6,
 ```
 
 ```{r}
-model1Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
-model2Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
-model3Stage1 <- lm(d_tradeusch_pw + t2000 ~ d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
-model4Stage1 <- lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
-model5Stage1 <- lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
-model6Stage1 <- lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
+model1Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model2Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model3Stage1 <- coeftest(lm(d_tradeusch_pw + t2000 ~ d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model4Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model5Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model6Stage1 <- coeftest(lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
 ```
 
 
@@ -414,7 +461,7 @@ stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, 
 
 The instruments are good, as they are significant in the first stage and the F statistics are above 10.
 
-<!-- Notes to No. 4: it is not clear whether you ask for vector or non-vector notation - if you want vector notation you are missing a prime and if you want non-vector notation you are missing an alpha. Either way you also are missing minuses! -->
+As the authors did not include a code book, it is not possible to replicate table 3 unless we use their codes. However, this does not fulfill the purpose of replicating the findings as we would just copy their code. Authors should ensure that it is possible to replicate their findings by including all necessary information!
 
 \clearpage
 
@@ -439,18 +486,19 @@ The fact that $\mathbb{E}[\epsilon]=0$ also means that the OLS estimator is unbi
 
 2. Now imagine that we want to estimate this regression model for a given distribution of the errors $F$ (e.g the logistic distribution) using maximum likelihood. Write out the distribution of $y_i$.
 
+We have $y_i = \alpha + \beta x_i + \epsilon_i = x_i\prime \beta + \epsilon_i$. From here on, we continue with matrix notation.
 In this case, more generally, $y_i$ is distributed as:
 
 $$
 y_i = \begin{cases}
-1 &\text{ with } p = F(X_i \beta) \\
-0 &\text{ with } 1-p = 1- F(X_i \beta)
+1 &\text{ with } p = F(x_i\prime \beta) \\
+0 &\text{ with } 1-p = 1- F(x_i\prime \beta)
 \end{cases}
 $$
 The likelihood of one observation (which is the pdf) is then simply:
 
 $$
-l_1 (y_i | x_i) = (F(X_i \beta))^{y_i} (1 - F(X_i \beta))^{1-y_i}
+l_1 (y_i | x_i) = (F(x_i\prime \beta)^{y_i} (1 - F(x_i\prime \beta))^{1-y_i}
 $$
 
 3. Use the distribution to write out the log-likelihood function. Then, write out the first-order condition for maximisation with respect to $\beta$.
@@ -458,19 +506,19 @@ $$
 The log-likelihood for $n$ observations is:
 
 $$
-\mathcal{L}_n (y_i | x_i) = \sum_{i=1}^n y_i \log (F(X_i\beta)) + (1-y_i) \log (1-F(X_i \beta))
+\mathcal{L}_n (y_i | x_i) = \sum_{i=1}^n y_i \log (F(x_i\prime \beta)) + (1-y_i) \log (1-F(x_i\prime \beta))
 $$
 
 Taking the first derivative with respect to the parameters $\beta$ gives:
 
 $$
-\frac{\partial \log \mathcal{L}_n (y_i|x_i)}{\partial \beta} = \sum y_i \frac{1}{F(X_i \beta)} f(X_i \beta) X_i - (1-y_i) \frac{1}{1-F(X_i \beta)} f(X_i \beta) X_i = 0
+\frac{\partial \log \mathcal{L}_n (y_i|x_i)}{\partial \beta} = \sum y_i \frac{1}{F(x_i\prime \beta)} f(x_i\prime \beta) x_i - (1-y_i) \frac{1}{1-F(x_i\prime \beta)} f(x_i\prime \beta) x_i = 0
 $$
 
 This can be rewritten as:
 
 $$
-\sum \frac{y_i - F(X_i\beta)}{F(X_i \beta)(1-F(X_i \beta))} f(X_i \beta) X_i = 0
+\sum \frac{y_i - F(x_i\prime \beta)}{F(x_i\prime \beta)(1-F(x_i\prime \beta))} f(x_i\prime \beta) x_i = 0
 $$
 
 4. Imagine we assume a logistic distribution of the errors. Show that our expression above simplifies to $\dots$. 
@@ -478,29 +526,29 @@ $$
 We use the fact from Heij et al., p. 449, that for the logistic distribution, $F(.) (1-F(.)) = f(.)$. Then, our expression simlifies to:
 
 $$
-\sum y_i - F(X_i \beta) x_i = 0 
+\sum y_i - F(x_i\prime \beta) x_i = 0 
 $$
 
 Then, substituting the logit cdf for $F$ gives:
 
 $$
-\sum y_i - \left( \frac{1}{1 + \text{exp}^{-x_i \beta}} \right) x_i = 0 
+\sum \left (y_i - \frac{1}{1 + \text{exp}^{-x_i\prime\beta}} \right) x_i = 0 
 $$
 
 which is what we were required to show.
 
-5. Finally, use the value of $F(x_i \beta)$ to write the log of the odds ratio as a function of the parameters of the model. Thus, give an interpretation of the value of $\beta$. 
+5. Finally, use the value of $F(x_i\prime \beta)$ to write the log of the odds ratio as a function of the parameters of the model. Thus, give an interpretation of the value of $\beta$. 
 
 The log odds ratio is defined as:
 
 $$
-OR = \frac{\frac{1}{1+\text{exp}^{-x_i \beta}}}{1 -  \frac{1}{1+\text{exp}^{-x_i \beta}}} = e^{x_i \beta}
+OR = \frac{\frac{1}{1+\text{exp}^{-x_i\prime \beta}}}{1 -  \frac{1}{1+\text{exp}^{-x_i\prime \beta}}} = e^{x_i\prime \beta}
 $$
 
 The log-odds ratio is then:
 
 $$
-\log OR = x_i \beta 
+\log OR = x_i\prime \beta 
 $$
 
 Beta is then equal to the derivative of the log odds ratio with respect to a regressor. This means that the the strength of $\beta$ is indicative of the relative likelihood of $P(Y_i = 1)$ occurring versus $P(Y_i = 0)$ occurring. In other words, if $\beta > 0$, then an increase in the independent variable makes the event more likely, and a decrease in the independent variable makes the event less likely. 
