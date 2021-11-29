@@ -1,19 +1,16 @@
 ---
-title: "Untitled"
-output: pdf_document
+title: "Assignment 2"
+author: "630516am and 590049bm"
+date: "30 Nov 2021"
+output:
+  pdf_document:
+    includes:
+      in_header: "preamble.tex"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r}
 library("stargazer")
 library(purrr)
 library(readr)
@@ -60,6 +57,7 @@ data = data.frame(cbind(y, x1, x2))
 model <- lm(y ~ x1 + x2, data=data)
 summary(model)
 ```
+
 ```{r}
 coeftest(model, vcov.= vcovHC(model, type="HC0"))
 ```
@@ -72,7 +70,7 @@ the value of the test statistic and explain if the null hypothesis is rejected.
 
 In a Breusch-Pagan test the squared OLS residuals are regressed on variables that may relate to the variance. It is assumed that heteroscedasticity is driven by $z_i$. Hence, the null hypothesis is that $\gamma_2,...,\gamma_n$ are zero. \\
 
-To perform the test, we have to estimate $y$ with OLS and compute the residuals in the first step. Thereafter, we perform an auxiliary regression of the form $e_i^2 = \gamma_1 + \gamma_2 z_{2i} + ... + \gamma_p z{pi} + \eta_i$. Takiung $R^2$ of our auxiliary regression, we can calculate $LM = n R^2$ for our test statistic.\\
+To perform the test, we have to estimate $y$ with OLS and compute the residuals in the first step. Thereafter, we perform an auxiliary regression of the form $e_i^2 = \gamma_1 + \gamma_2 z_{2i} + ... + \gamma_p z{pi} + \eta_i$. Taking $R^2$ of our auxiliary regression, we can calculate $LM = n R^2$ for our test statistic.\\
 
 ```{r}
 usq <- resid(model)^2
@@ -95,7 +93,7 @@ If $z_i$ would not drive the heteroscedasticity, the model would not have any ex
 c) Assume that $\gamma = 0$. Estimate $\beta_0, \beta_1$ and $\beta_2$ separately using\\
 1. OLS\\
 2. WLS with known $\gamma = 0$\\
-3. FWLS with estimated γ (i.e. γ is unknown)\\
+3. FWLS with estimated $\gamma$ (i.e. $\gamma$ is unknown)\\
 
 Explain the weights you use for WLS and FWLS. Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the their true values?\\
 
@@ -138,7 +136,7 @@ summary(modelFWLS)$coeff
 
 The estimators and variances are approximately equal in all estimated models (there are minor differences from the fourth digit on). Only the variance in the feasible weighted least square model is slightly higher. However, the difference is minimal. For $x_1, x_2$ the estimators are very close to their true value. The intercept also close although there is a higher difference then for the other estimators.\\
 
-d) Now assume that $\gamma = 1$. Repeat sub-question(c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones
+d) Now assume that $\gamma= 1$. Repeat sub-question (c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones
 
 ```{r}
 gammaD = 1
@@ -175,7 +173,7 @@ summary(modelFWLSD)$coeff
 ```
 The estimators of all three models are very close to the true values. However, the variance is higher in the basic OLS model than in the WLS and FWLS models which is not surprising given the heteroskedasticity of the errors. 
 
-e) Now assume that $\gamma = −1$. Repeat sub-question(c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones?
+e) Now assume that $\gamma=-1$. Repeat sub-question (c). Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the true ones?
 
 ```{r}
 gammaE = -1
@@ -212,8 +210,90 @@ summary(modelFWLSE)$coeff
 ```
 The estimators are still close to their true values. However, the difference is slightly higher than in the previous estimations. A very interesting aspect is that the standard errors are approximately the same across all models (it this maybe a mistake?).
 
+\clearpage 
 
-# Question 3
+## Question 2
+
+1. Show that the OLS estimator of the parameter $\beta$ is not consistent. 
+
+2. Derive plim (b) where b is the OLS estimator of $\beta$. Determine the sign of the magnitude of the inconsistency when $0 < \beta < 1$,  that is, the sign of plim(b) - $\beta$ when $0 < \beta < 1$.
+
+In order to evaluate consistency, we must derive the probability limit. Hence, we answer two questions at once. 
+
+First, we demean the two variables so that the constant-term $\alpha$ equals zero. Then we regress $\tilde{C} = \beta \tilde{D} + \epsilon$. We can do this because of Frisch-Waugh-Lovell. The estimate that we get is:
+
+
+$$
+\hat \beta = (\tilde{D}^T\tilde{D})^{-1}\tilde{D}^T C_ = (\tilde{D}^T \tilde{D})^{-1}(\beta  \tilde{D} + \epsilon) 
+$$
+
+and
+
+$$
+\mathbb{E}[\hat{\beta}] = \beta + (\tilde{D}^T \tilde{D})^{-1}\tilde{D}^T \epsilon 
+$$
+Evaluating the probability limit gives:
+
+$$
+\text{plim}_{n \rightarrow \infty} (\hat{\beta}) = \beta + \text{plim}(\frac{1}{n} \tilde{D}^T\tilde{D})^{-1} \cdot \text{plim}(\frac{1}{n}\tilde{D}^T\epsilon)
+$$
+
+which simplifies to:
+
+$$
+\beta + \frac{1}{\text{Var}(D)} \cdot \frac{1}{1-\beta} \sigma^2
+$$
+by the fact that variances and covariances are the same after demeaning, and by the reduced form equation for $D$ made explicit below. Under $0 < \beta < 1$, since variances are positive, the right term can only be positive and thus the bias is always positive. 
+
+Substituting equation (2) into equation (1) and solving for $C$ gives:
+
+$$
+C = \frac{\alpha}{1-\beta} + \frac{\beta}{1-\beta} Z_i + \frac{1}{1-\beta} \epsilon_i
+$$
+substituting this back in the definition for $D$ gives:
+
+$$
+D = \frac{\alpha}{1-\beta} + \left(\frac{\beta}{1-\beta} + 1 \right) Z_i + \frac{1}{1-\beta} \epsilon_i
+$$
+
+From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon) = \frac{1}{1-\beta} \sigma^2$. 
+
+3. Find an instrumental variable (IV) for the endogenous variable D i and argue why it could be an IV.
+
+The instrumental variable could be $Z$, because it is relevant, i.e. Cov(D, Z) $\neq 0$. Also, it is exogenous (valid), as it is exogenously generated and has no correlation with the error term $\epsilon$ according to the DGP sketched out here.
+
+4. Derive $b_{IV}$, the IV estimator of $\beta$ in terms of the variables C, D, and Z step by step.
+
+First, suppose X is a matrix consisting of a column of 1's and $D$, so we can write:
+
+$$
+\mathbb{E}[z_i \epsilon_i] = 0 = \frac{1}{n} \sum z_i ( c_i - \alpha - \beta D_i) = \frac{1}{n} \sum z_i (c_i - x_i \beta)
+$$
+
+Using this moment condition to solve for $\beta$, we retrieve the $b_{IV}$ estimator:
+
+$$
+\hat{b}_{IV} = \left( \sum z_i^T x_i \right)^{-1} \left( z_i^T c_i \right) = (Z^T X)^{-1} Z^T C
+$$
+
+5. Use the expression of $b_{IV}$ to show that it is consistent. 
+
+$$
+b_{IV} =  (Z^T X)^{-1} Z^T C =  (Z^T X)^{-1} Z^T (X \beta + \epsilon) = (Z^T X)^{-1} Z^T X \beta + (Z^T X)^{-1} Z^T \epsilon = \beta + (Z^T X)^{-1} Z^T \epsilon 
+$$
+
+Evaluating the plim of this estimator then gives:
+
+$$
+\text{plim}(b_{IV}) = \beta + \text{plim} (Z^T X)^{-1} \cdot \text{plim} (Z^T \epsilon)
+$$
+
+where the last factor goes to zero as $n \rightarrow \infty$. 
+
+
+\clearpage
+
+## Question 3
 
 ```{r}
 china <- read_dta("workfile_china.dta")
@@ -240,9 +320,10 @@ summary(model)
 chinalong %>%
  ggplot(aes(x = d_tradeusch_pw, y = d_pct_manuf )) +
  geom_point(colour = "grey") +
- geom_smooth(method = "lm", fill = NA)+
- theme_ipsum()
+ geom_smooth(method = "lm", fill = NA) #+
+ #hrbrthemes::theme_ipsum()
 ```
+
 ```{r}
 # controlling for clustered errors
 coeftest(model, vcov = vcovCL, type = "HC1", cluster = ~statefip)
@@ -306,9 +387,12 @@ model6 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future + t1980| d_trade
 ```
 
 
-```{r}
-stargazer(model1, model2, model3, model4, model5, model6)
+```{r results = 'asis'}
+stargazer(model1, model2, model3, model4, model5, model6, 
+          header=FALSE, 
+          column.sep.width="0pt")
 ```
+
 ```{r}
 model1Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
 model2Stage1 <- lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
@@ -318,11 +402,107 @@ model5Stage1 <- lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subse
 model6Stage1 <- lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), vcov = vcovCL, cluster = ~statefip, weights=timepwt48)
 ```
 
-```{r}
-stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, model6Stage1)
+
+```{r results='asis'}
+stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, model6Stage1, 
+          header = FALSE, 
+          column.sep.width = "0pt", 
+          font.size = "tiny",
+          df = FALSE)
 ```
+
 
 The instruments are good, as they are significant in the first stage and the F statistics are above 10.
 
-Notes to No. 4: it is not clear whether you ask for vector or non-vector notation - if you want vector notation you are missing a prime and if you want non-vector notation you are missing an alpha. Either way you also are missing minuses!
+<!-- Notes to No. 4: it is not clear whether you ask for vector or non-vector notation - if you want vector notation you are missing a prime and if you want non-vector notation you are missing an alpha. Either way you also are missing minuses! -->
+
+\clearpage
+
+## Question 4
+
+1. Imagine we fit a linear probability model of $y_i = \alpha + \beta x_i + \epsilon_i$. Derive the distribution of the error terms. Will our least-squares parameter estimate $\beta$ be unbiased? Will it still be the most efficient estimator?
+
+We know that $y_i$ is distributed with probability $p$. If we use a linear model to estimate a $y$, we impose that $p(y_i = 1) = \mathbb{E}[y_i] = \alpha + \beta x_i$. Then, we can characterize the distribution of the error term:
+
+$$
+\epsilon_i = \begin{cases}
+1 - \hat{\alpha} - \hat{\beta}x_i &\text{ with } p = \alpha + \beta x_i \\
+- \hat{\alpha} - \hat{\beta} x_i &\text{ with } p = 1 - (\alpha + \beta x_i)
+\end{cases}
+$$
+Then, since $\epsilon_i$ is now a shifted Bernouilli variable, we can calculate the expected value as:
+
+$$
+\mathbb{E}[\epsilon_i] = (1-\alpha - \beta x_i ) \cdot (\alpha + \beta x_i) + (-\alpha -  \beta x_i) \cdot (1 - \alpha - \beta x_i) = 0
+$$
+The fact that $\mathbb{E}[\epsilon]=0$ also means that the OLS estimator is unbiased. However, the variance $\sigma^2_{\epsilon}$ as $p(1-p) = (\alpha + \beta x_i)\cdot (1-(\alpha + \beta x_i)) = f(x_i)$. This means that the variance of the error term is heteroskedastic! Hence, the estimator will not be the most efficient estimator, as one of the Gauss-Markov assumptions is violated. 
+
+2. Now imagine that we want to estimate this regression model for a given distribution of the errors $F$ (e.g the logistic distribution) using maximum likelihood. Write out the distribution of $y_i$.
+
+In this case, more generally, $y_i$ is distributed as:
+
+$$
+y_i = \begin{cases}
+1 &\text{ with } p = F(X_i \beta) \\
+0 &\text{ with } 1-p = 1- F(X_i \beta)
+\end{cases}
+$$
+The likelihood of one observation (which is the pdf) is then simply:
+
+$$
+l_1 (y_i | x_i) = (F(X_i \beta))^{y_i} (1 - F(X_i \beta))^{1-y_i}
+$$
+
+3. Use the distribution to write out the log-likelihood function. Then, write out the first-order condition for maximisation with respect to $\beta$.
+
+The log-likelihood for $n$ observations is:
+
+$$
+\mathcal{L}_n (y_i | x_i) = \sum_{i=1}^n y_i \log (F(X_i\beta)) + (1-y_i) \log (1-F(X_i \beta))
+$$
+
+Taking the first derivative with respect to the parameters $\beta$ gives:
+
+$$
+\frac{\partial \log \mathcal{L}_n (y_i|x_i)}{\partial \beta} = \sum y_i \frac{1}{F(X_i \beta)} f(X_i \beta) X_i - (1-y_i) \frac{1}{1-F(X_i \beta)} f(X_i \beta) X_i = 0
+$$
+
+This can be rewritten as:
+
+$$
+\sum \frac{y_i - F(X_i\beta)}{F(X_i \beta)(1-F(X_i \beta))} f(X_i \beta) X_i = 0
+$$
+
+4. Imagine we assume a logistic distribution of the errors. Show that our expression above simplifies to $\dots$. 
+
+We use the fact from Heij et al., p. 449, that for the logistic distribution, $F(.) (1-F(.)) = f(.)$. Then, our expression simlifies to:
+
+$$
+\sum y_i - F(X_i \beta) x_i = 0 
+$$
+
+Then, substituting the logit cdf for $F$ gives:
+
+$$
+\sum y_i - \left( \frac{1}{1 + \text{exp}^{-x_i \beta}} \right) x_i = 0 
+$$
+
+which is what we were required to show.
+
+5. Finally, use the value of $F(x_i \beta)$ to write the log of the odds ratio as a function of the parameters of the model. Thus, give an interpretation of the value of $\beta$. 
+
+The log odds ratio is defined as:
+
+$$
+OR = \frac{\frac{1}{1+\text{exp}^{-x_i \beta}}}{1 -  \frac{1}{1+\text{exp}^{-x_i \beta}}} = e^{x_i \beta}
+$$
+
+The log-odds ratio is then:
+
+$$
+\log OR = x_i \beta 
+$$
+
+Beta is then equal to the derivative of the log odds ratio with respect to a regressor. This means that the the strength of $\beta$ is indicative of the relative likelihood of $P(Y_i = 1)$ occurring versus $P(Y_i = 0)$ occurring. In other words, if $\beta > 0$, then an increase in the independent variable makes the event more likely, and a decrease in the independent variable makes the event less likely. 
+
 
