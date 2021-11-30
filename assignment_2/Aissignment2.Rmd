@@ -48,7 +48,7 @@ gamma = 1
 ```{r}
 sigmaV = sigma*exp(gamma*z)
 epsilon = rnorm(n, 0, sqrt(sigmaV))
-plot(epsilon, type = "l")
+plot(epsilon, type = "p")
 ```
 
 ```{r}
@@ -61,12 +61,12 @@ summary(model)
 ```{r}
 coeftest(model, vcov.= vcovHC(model, type="HC0"))
 ```
-We used the coeftest function from the lmtest library in combination with the funtion vcovHC from the sandwhich package to calculate a model with the White standard errors. The coeftest function calculates the t test using a heteroskedasticity robust variance-covariance matrix produced by the vcov function. With "HCO" we indicate that we want to obtain a White standard error (Source: https://www.r-econometrics.com/methods/hcrobusterrors/). \\
+
+We used the coeftest function from the lmtest library in combination with the function vcovHC from the sandwich package to calculate a model with the White standard errors. The coeftest function calculates the t test using a heteroskedasticity robust variance-covariance matrix produced by the vcov function. With "HCO" we indicate that we want to obtain a White standard error (Source: https://www.r-econometrics.com/methods/hcrobusterrors/). \\
 
 Corresponding to the theory, the estimates are unbiased despite heteroscedasticity. Hence, it is no surprise that the estimates are the same for both regressions. However, heteroscedasticity causes inefficiency of the variance which is why the standard error is higher in the basic OLS regression than in the OLS model with White standard errors.
 
-b) What are the procedures to perform the Breusch-Pagan test for heteroskedasticity? Perform a Breusch-Pagan test for heteroskedasticity. Provide
-the value of the test statistic and explain if the null hypothesis is rejected.
+b) What are the procedures to perform the Breusch-Pagan test for heteroskedasticity? Perform a Breusch-Pagan test for heteroskedasticity. Provide the value of the test statistic and explain if the null hypothesis is rejected.
 
 In a Breusch-Pagan test the squared OLS residuals are regressed on variables that may relate to the variance. It is assumed that heteroscedasticity is driven by $z_i$. Hence, the null hypothesis is that $\gamma_2,...,\gamma_n$ are zero. \\
 
@@ -97,12 +97,14 @@ c) Assume that $\gamma = 0$. Estimate $\beta_0, \beta_1$ and $\beta_2$ separatel
 
 Explain the weights you use for WLS and FWLS. Provide the coefficients and standard errors of the three estimators for three methods and compare the results. Are the estimators close to the their true values?\\
 
+Firstly, we generate the new epsilons again, while leaving the variables generated $x_1$ and $x_2$ untouched. In the question, it is not specified whether we show generate new $x_1$ and $x_2$'s, in addition to the $\epsilon$s. Therefore, we leave them untouched, while generating all the variables that are dependent on $\sigma$ (directly and indirectly) again. 
+
 ```{r}
 gammaC = 0
 sigmaC = sigma*exp(gammaC*z)
 epsilonC = rnorm(n, 0, sqrt(sigmaC))
-plot(epsilonC, type = "l")
 ```
+
 ```{r}
 yC = b0 + b1*x1 + b2*x2 + epsilonC
 dataC = data.frame(cbind(yC, x1, x2))
@@ -110,9 +112,7 @@ modelC <- lm(yC ~ x1 + x2, data =dataC)
 summary(modelC)
 ```
 
-For the weighthed least square model, we use $exp(\gamma z_i)$ as our weight, as this is the component that drives the heteroskedasticity in our errors: $w_i = \frac{1}{e^{\gamma z_i}}$. As $\gamma = 0$, the regression should result in the same estimators and same variances as in the basic OLS regression. 
-
-
+For the weighted least square model, we use $exp(\gamma z_i)$ as our weight, as this is the component that drives the heteroskedasticity in our errors: $w_i = \frac{1}{e^{\gamma z_i}}$. As $\gamma = 0$, the regression should result in the same estimators and same variances as in the basic OLS regression. 
 
 ```{r}
 # ----- WLS
@@ -122,7 +122,8 @@ modelWLS <- lm(yC ~ x1 + x2, data =dataC, weights=w)
 summary(modelWLS)$coeff
 ```
 
-For the feasible weighthed least square model, we first use the residuals of the basic OLS regression to estimate $\gamma$. Then we use this estimator to calculate $exp(\gamma z_i)$ which is then used as our weight as this is the component which drives the heteroskedasticity in our errors.
+For the feasible weighted least square model, we first use the residuals of the basic OLS regression to estimate $\gamma$. Then we use this estimator to calculate $exp(\gamma z_i)$ which is then used as our weight as this is the component which drives the heteroskedasticity in our errors.
+
 ```{r}
 # --- FWLS
 eps <- modelC$residuals
@@ -142,7 +143,6 @@ d) Now assume that $\gamma= 1$. Repeat sub-question (c). Provide the coefficient
 gammaD = 1
 sigmaD = sigma*exp(gammaD*z)
 epsilonD = rnorm(n, 0, sqrt(sigmaD))
-plot(epsilonD, type = "l")
 ```
 
 ```{r}
@@ -179,7 +179,6 @@ e) Now assume that $\gamma=-1$. Repeat sub-question (c). Provide the coefficient
 gammaE = -1
 sigmaE = sigma*exp(gammaE*z)
 epsilonE = rnorm(n, 0, sqrt(sigmaE))
-plot(epsilonE, type = "l")
 ```
 
 ```{r}
@@ -208,6 +207,7 @@ modelFWLSE <- lm(yE ~ x1 + x2, data =dataE, weights=w)
 
 summary(modelFWLSE)$coeff
 ```
+
 The estimators are still close to their true values. However, the difference is slightly higher than in the previous estimations.
 
 \clearpage 
@@ -248,7 +248,7 @@ $$
 $$
 \text{plim}(b) = \beta + Q^{-1}_{DD} ( \text{plim}(\frac{1}{n} C^T \epsilon) + \text{plim}(\frac{1}{n} Z^T \epsilon))
 $$
-For $n \rightarrow \infty$, $\text{plim}(\frac{1}{n} Z^T \epsilon) = 0$ as $\mathbb{E}[Z_i \epsilon_i] = 0$. $\text{plim}(\frac{1}{n} C^T \epsilon$, on the other side, is unequal zero as $\epsilon$ is inside the DGP and therefore the covariance is unequal zero. 
+For $n \rightarrow \infty$, $\text{plim}(\frac{1}{n} Z^T \epsilon) = 0$ as $\mathbb{E}[Z_i \epsilon_i] = 0$. $\text{plim}(\frac{1}{n} C^T \epsilon$, on the other side, is unequal zero as $\epsilon$ is inside the DGP ($C = \beta D + \epsilon$) and therefore the covariance is unequal to zero. 
 
 2. Derive plim (b) where b is the OLS estimator of $\beta$. Determine the sign of the magnitude of the inconsistency when $0 < \beta < 1$,  that is, the sign of plim(b) - $\beta$ when $0 < \beta < 1$.
 
@@ -258,7 +258,7 @@ First, we demean the two variables so that the constant-term $\alpha$ equals zer
 
 
 $$
-\hat \beta = (\tilde{D}^T\tilde{D})^{-1}\tilde{D}^T C_ = (\tilde{D}^T \tilde{D})^{-1}(\beta  \tilde{D} + \epsilon) 
+\hat \beta = (\tilde{D}^T\tilde{D})^{-1}\tilde{D}^T C = (\tilde{D}^T \tilde{D})^{-1}(\beta  \tilde{D} + \epsilon) 
 $$
 
 and
@@ -293,11 +293,11 @@ $$
 From this, we can calculate Cov(D, $\epsilon_i$), which is $\frac{1}{1-\beta}\text{Var}(\epsilon) = \frac{1}{1-\beta} \sigma^2$:
 
 $$
-\text{plim}(\frac{1}{n} C\prime \epsilon) = \frac{1}{n} \mathbb{E}[C\prime \epsilon] = \frac{1}{n} \mathbb{E} \sum [(C_i\prime \epsilon_i) \epsilon_i] = \frac{1}
-{n} \mathbb{E}[\sum (\frac{\alpha}{1-\beta} + \frac{\beta}{1-\beta} Z_i + \frac{1}{1-\beta} \epsilon_i)]
+\text{plim}(\frac{1}{n} C\prime \epsilon) = \frac{1}{n} \mathbb{E}\left[C\prime \epsilon\right] = \frac{1}{n} \mathbb{E} \sum [(C_i\prime \epsilon_i) \epsilon_i] = \frac{1}
+{n} \mathbb{E}\left[\sum (\frac{\alpha}{1-\beta} + \frac{\beta}{1-\beta} Z_i + \frac{1}{1-\beta} \epsilon_i)\right]
 $$
 $$
-\Rightarrow = \frac{1}{n} \mathbb{E}[\frac{1}{1-\beta} \sum \epsilon_i]
+\Rightarrow = \frac{1}{n} \mathbb{E}\left[\frac{1}{1-\beta} \sum \epsilon_i\right]
 $$
 $$
 \Rightarrow = \frac{1}{1-\beta} \sigma^2
@@ -309,7 +309,7 @@ The instrumental variable could be $Z$, because it is relevant, i.e. Cov(D, Z) $
 
 4. Derive $b_{IV}$, the IV estimator of $\beta$ in terms of the variables C, D, and Z step by step.
 
-First, suppose X is a matrix consisting of a column of 1's and $D$, so we can write:
+First, suppose X is a matrix consisting of a column of 1's and $D$, and $x_i$ is a row out of this data matrix, so we can write:
 
 $$
 \mathbb{E}[z_i \epsilon_i] = 0 = \frac{1}{n} \sum z_i ( c_i - \alpha - \beta D_i) = \frac{1}{n} \sum z_i (c_i - x_i \beta)
@@ -321,7 +321,7 @@ $$
 \hat{b}_{IV} = \left( \sum z_i^T x_i \right)^{-1} \left( z_i^T c_i \right) = (Z^T X)^{-1} Z^T C
 $$
 
-The second element of the vector is the $b_{IV}$.
+The second element of this vector is the coefficient for $\beta$ in the consumption equation. 
 
 5. Use the expression of $b_{IV}$ to show that it is consistent. 
 
@@ -352,8 +352,10 @@ chinapreperiod <- read_dta("workfile_china_preperiod.dta")
 a) Plot the distribution of the growth rate of employment and of import exposure 1990-2007 across US commuting zones.
 
 ```{r}
-plot(chinalong$czone, chinalong$d_pct_manuf, type="l", main = "distribution of the growth rate of employment")
-plot(chinalong$czone, chinalong$d_tradeusch_pw, type="l", main = "distribution of import exposure")
+plot(chinalong$czone, chinalong$d_pct_manuf, type="l", 
+     main = "distribution of the growth rate of employment")
+plot(chinalong$czone, chinalong$d_tradeusch_pw, type="l",
+     main = "distribution of import exposure")
 ```
 
 
@@ -367,8 +369,7 @@ summary(model)
 chinalong %>%
  ggplot(aes(x = d_tradeusch_pw, y = d_pct_manuf )) +
  geom_point(colour = "grey") +
- geom_smooth(method = "lm", fill = NA) #+
- #hrbrthemes::theme_ipsum()
+ geom_smooth(method = "lm", fill = NA) 
 ```
 
 ```{r}
@@ -383,12 +384,12 @@ coeftest(model, vcov = vcovHAC, type = "HC1", cluster = ~statefip)
 ```
 The estimators are approximately the same. However, the standard errors are smaller for the model with HAC standard errors clustered by the state levels as we control for heteroskedasticity and autocorrelation. 
 
-
 c) Is this a good causal estimate of the effect of import exposure on employment? Give a reason why or why not.
 
 It is rather seldom that a regression with only one explanatory variable is a sufficient causal estimate. While a higher import exposure indeed correlates with higher unemployment as a higher part of production is outsourced to other countries, we also could consider the export exposure (as exports correlate positively with employment). The question is also what determines the amount of imports in the USA (add more!).
 
 d) The authors construct an instrument for import exposure using the growth rate of Chinese imports in eight other similar countries.
+
 Construct the instrumental variable estimate of the effect of the growth of import exposure on the growth of employment using the instrument from the data in \"workfile china.dta\". Do so in two ways. First, use a package. Then use matrix multiplication. Present regression results for both. Do not include any additional controls for now.\\
 To show that you have done the matrix multiplication is correct, report the third entry of the projection matrix of the instrument times the endogenous variable i.e of $P_zX$.
 
@@ -420,17 +421,32 @@ Third entry of $P_zX$:
 ```{r}
 Xhat[3,2]
 ```
-e) You might notice that your results are different from the results in the paper. The authors use weighted estimates, where the weights are shares of manufacturing employment. Now reproduce the results in Table 2 and Table 3 in the paper exactly as they do (so two tables containing all the coefficient estimates). For the first, you will need to use workf ile china preperiod.dta. For the second, use ”workf ile china.dta”
-instead. Report the first-stage F statistics. Is the instrument a good instrument?
+e) You might notice that your results are different from the results in the paper. The authors use weighted estimates, where the weights are shares of manufacturing employment. Now reproduce the results in Table 2 and Table 3 in the paper exactly as they do (so two tables containing all the coefficient estimates). For the first, you will need to use workfile china preperiod.dta. For the second, use ”workfile china.dta” instead. Report the first-stage F statistics. Is the instrument a good instrument?
 
 ```{r}
 
-model1 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model2 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model3 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw + t2000| d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model4 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model5 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model6 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future + t1980| d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model1 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, 
+                         data=subset(chinapreperiod, yr==1990),
+                         weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model2 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw| d_tradeotch_pw_lag, 
+                         data=subset(chinapreperiod, yr==2000), 
+                         weights=timepwt48), vcov = vcovCL,
+                   cluster = ~statefip)
+model3 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw + t2000| d_tradeotch_pw_lag+ t2000, 
+                         data=subset(chinapreperiod, yr==1990|yr==2000),
+                         weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model4 <- coeftest(ivreg(d_sh_empl_mfg ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future, 
+                         data=subset(chinapreperiod, yr==1970), 
+                         weights=timepwt48), vcov = vcovCL, 
+                   cluster = ~statefip)
+model5 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future| d_tradeotch_pw_lag_future,
+                         data=subset(chinapreperiod, yr==1980), 
+                         weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model6 <- coeftest(ivreg(d_sh_empl_mfg  ~ d_tradeusch_pw_future + t1980|
+                           d_tradeotch_pw_lag_future + t1980,
+                         data=subset(chinapreperiod, yr==1970|yr==1980), 
+                         weights=timepwt48), 
+                   vcov = vcovCL, cluster = ~statefip)
 ```
 
 
@@ -441,27 +457,39 @@ stargazer(model1, model2, model3, model4, model5, model6,
 ```
 
 ```{r}
-model1Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==1990), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model2Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, data=subset(chinapreperiod, yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model3Stage1 <- coeftest(lm(d_tradeusch_pw + t2000 ~ d_tradeotch_pw_lag+ t2000, data=subset(chinapreperiod, yr==1990|yr==2000), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model4Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1970), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model5Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, data=subset(chinapreperiod, yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
-model6Stage1 <- coeftest(lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, data=subset(chinapreperiod, yr==1970|yr==1980), weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model1Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag,
+                            data=subset(chinapreperiod, yr==1990), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model2Stage1 <- coeftest(lm(d_tradeusch_pw ~ d_tradeotch_pw_lag, 
+                            data=subset(chinapreperiod, yr==2000), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model3Stage1 <- coeftest(lm(d_tradeusch_pw + t2000 ~ d_tradeotch_pw_lag+ t2000, 
+                            data=subset(chinapreperiod, yr==1990|yr==2000), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model4Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future,
+                            data=subset(chinapreperiod, yr==1970), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model5Stage1 <- coeftest(lm(d_tradeusch_pw_future ~ d_tradeotch_pw_lag_future, 
+                            data=subset(chinapreperiod, yr==1980), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
+model6Stage1 <- coeftest(lm(d_tradeusch_pw_future + t1980 ~ d_tradeotch_pw_lag_future + t1980, 
+                            data=subset(chinapreperiod, yr==1970|yr==1980), 
+                            weights=timepwt48), vcov = vcovCL, cluster = ~statefip)
 ```
 
 
 ```{r results='asis'}
-stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, model5Stage1, model6Stage1, 
+stargazer(model1Stage1, model2Stage1, model3Stage1, model4Stage1, 
+          model5Stage1, model6Stage1, 
           header = FALSE, 
           column.sep.width = "0pt", 
           font.size = "tiny",
           df = FALSE)
 ```
 
-
 The instruments are good, as they are significant in the first stage and the F statistics are above 10.
 
-As the authors did not include a code book, it is not possible to replicate table 3 unless we use their codes. However, this does not fulfill the purpose of replicating the findings as we would just copy their code. Authors should ensure that it is possible to replicate their findings by including all necessary information!
+**Note:** As the authors did not include a code book, it is not possible to replicate table 3 unless we use their codes. However, this does not fulfill the purpose of replicating the findings as we would just copy their code. Authors should ensure that it is possible to replicate their findings by including all necessary information!
 
 \clearpage
 
